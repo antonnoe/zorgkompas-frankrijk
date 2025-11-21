@@ -1,10 +1,7 @@
 :root {
-    /* JOUW HUISSTIJL */
-    --brand: #800000;       /* Bordeaux */
-    --brand-light: #f4e9e9; /* Zeer licht rood achtergrond */
+    --brand: #800000;       
+    --brand-light: #f4e9e9; 
     --brand-dark: #5c0000;  
-    
-    /* Functionele kleuren */
     --green: #15803d;
     --green-light: #f0fdf4;
     --text: #1f2937;
@@ -23,7 +20,7 @@ body {
 /* HEADER */
 #zk-header {
     background: white;
-    border-bottom: 4px solid var(--brand); /* Rood randje */
+    border-bottom: 4px solid var(--brand);
     padding: 30px 20px;
     text-align: center;
     box-shadow: var(--shadow);
@@ -43,18 +40,19 @@ body {
     justify-content: center;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 500; /* Verhoogd voor zekerheid */
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .zk-dash-block { display: flex; flex-direction: column; gap: 4px; min-width: 200px; }
-.zk-dash-block label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: #666; }
+.zk-dash-block label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: #666; display: flex; align-items: center; }
 .zk-dash-block select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; }
 
-.zk-opt-row { display: flex; gap: 15px; font-size: 14px; align-items: center; }
-.zk-opt-row input { accent-color: var(--brand); transform: scale(1.1); }
+.zk-opt-row { display: flex; gap: 15px; font-size: 13px; align-items: center; }
+.zk-opt-row label { text-transform: none; color: var(--text); cursor: pointer; }
+.zk-opt-row input { accent-color: var(--brand); transform: scale(1.1); margin-right: 6px; }
 
-/* TOTAL BOX (In huisstijl rood) */
+/* TOTAL BOX */
 #zk-total {
     margin-left: auto;
     background: var(--brand-light);
@@ -75,7 +73,7 @@ body {
 /* OUTPUT CONTAINER */
 #zk-detail-container { max-width: 800px; margin: 0 auto 60px; padding: 0 20px; }
 
-/* INTRO CARD & ACCURACY METER */
+/* INTRO CARD */
 .zk-intro-card {
     background: white;
     padding: 25px;
@@ -84,30 +82,6 @@ body {
     margin-bottom: 30px;
     border-top: 4px solid var(--brand);
 }
-
-.zk-accuracy-container {
-    background: #f3f4f6;
-    border-radius: 6px;
-    padding: 10px 15px;
-    margin-bottom: 15px;
-    font-size: 13px;
-}
-.zk-accuracy-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 600; }
-.zk-accuracy-bar-bg {
-    height: 8px;
-    background: #e5e7eb;
-    border-radius: 4px;
-    overflow: hidden;
-}
-.zk-accuracy-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 1s ease-in-out;
-}
-/* Kleuren voor de bar */
-.fill-high { background: #15803d; } /* Groen */
-.fill-mid { background: #d97706; }  /* Oranje */
-.fill-low { background: #dc2626; }  /* Rood */
 
 /* ACCORDION STEPS */
 .zk-step {
@@ -148,53 +122,56 @@ body {
     padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px;
 }
 
-/* TOOLTIP (MET SVG) */
+/* TOOLTIP STYLING */
 .zk-info-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     vertical-align: middle;
-    margin-left: 4px;
+    margin-left: 5px;
     cursor: help;
-    opacity: 0.6;
+    opacity: 0.5;
     transition: opacity 0.2s;
 }
 .zk-info-icon:hover { opacity: 1.0; }
 
-/* De pop-up logic */
 .zk-tooltip-wrapper { position: relative; display: inline-flex; align-items: center; }
+
+/* Tooltip pop-up */
 .zk-tooltip-wrapper:hover::after {
     content: attr(data-tip);
     position: absolute;
-    bottom: 135%;
+    top: 140%; /* Eronder in dashboard */
     left: 50%;
     transform: translateX(-50%);
     background: #333;
     color: white;
-    padding: 10px 15px;
+    padding: 10px 14px;
     border-radius: 6px;
     font-size: 12px;
-    width: 220px;
-    z-index: 1000;
+    font-weight: 400;
+    width: 200px;
+    z-index: 9999; /* Moet boven alles liggen */
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     line-height: 1.4;
     text-align: center;
     pointer-events: none;
+    text-transform: none; /* Reset uppercase from labels */
+    white-space: normal;
 }
-/* Pijltje onder tooltip */
+
+/* Pijltje omhoog */
 .zk-tooltip-wrapper:hover::before {
     content: "";
     position: absolute;
-    bottom: 85%; /* Net onder de textballon */
+    top: 100%; 
     left: 50%;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #333 transparent transparent transparent;
-    z-index: 1000;
+    border-color: transparent transparent #333 transparent;
+    z-index: 9999;
 }
 
 /* FOOTER */
 #zk-footer { text-align: center; font-size: 12px; color: #999; padding: 40px 0; }
-
-/* Icons in accordion */
 .icon-img { width: 20px; height: 20px; vertical-align: middle; }
