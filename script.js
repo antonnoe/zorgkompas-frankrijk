@@ -1,15 +1,18 @@
 /* ============================================================
-   ZORGKOMPAS SCRIPT.JS – V2.0
+   ZORGKOMPAS SCRIPT.JS – FINAL INTEGRATED VERSION
+   Koppelt de UI (index.html) aan de Logic (scenarioEngine.js)
    ============================================================ */
 
 import { ZK_SCENARIOS } from "./scenarios.js";
+import { zkRunScenario } from "./scenarioEngine.js"; 
+// ^ BELANGRIJK: We gebruiken nu jouw slimme rekenmachine!
 
 // ------------------------------------------------------------
-// STATE
+// 1. STATE MANAGEMENT
 // ------------------------------------------------------------
 const ZK_STATE = {
-    status: "worker",
-    mutuelle: 2,
+    status: "worker",  // worker, pensioner, resident
+    mutuelle: 2,       // 0, 1, 2, 3, 4 (factor)
     ald: false,
     traitant: true,
     private: false,
@@ -17,197 +20,163 @@ const ZK_STATE = {
 };
 
 // ------------------------------------------------------------
-// HELPERS
+// 2. INITIALISATIE & DROPDOWN
 // ------------------------------------------------------------
-const € = (v) => "€ " + v.toFixed(2).replace(".", ",");
-
-// ------------------------------------------------------------
-// INIT SCENARIO DROPDOWN
-// ------------------------------------------------------------
-function initScenarioDropdown() {
+function initApp() {
     const select = document.getElementById("zk-scenario-select");
+    
+    // Vul de dropdown met scenario's uit scenarios.js
     ZK_SCENARIOS.forEach(s => {
         const opt = document.createElement("option");
         opt.value = s.id;
         opt.textContent = s.label;
         select.appendChild(opt);
     });
+
+    // Koppel alle event listeners
+    attachListeners();
+}
+
+function attachListeners() {
+    // Koppel UI inputs aan State
+    document.getElementById("zk-status").onchange = e => {
+        ZK_STATE.status = e.target.value;
+        updateCalculation();
+    };
+
+    document.getElementById("zk-mutuelle").onchange = e => {
+        ZK_STATE.mutuelle = Number(e.target.value);
+        updateCalculation();
+    };
+
+    document.getElementById("zk-opt-ald").onchange = e => {
+        ZK_STATE.ald = e.target.checked;
+        updateCalculation();
+    };
+
+    document.getElementById("zk-opt-traitant").onchange = e => {
+        ZK_STATE.traitant = e.target.checked;
+        updateCalculation();
+    };
+
+    document.getElementById("zk-opt-private").onchange = e => {
+        ZK_STATE.private = e.target.checked;
+        updateCalculation();
+    };
+
+    document.getElementById("zk-scenario-select").onchange = e => {
+        ZK_STATE.scenario = e.target.value;
+        updateCalculation();
+    };
 }
 
 // ------------------------------------------------------------
-// CALCULATION ENGINE (super-compact & stable)
+// 3. CORE LOGIC: BEREKENEN & RENDEREN
 // ------------------------------------------------------------
-function calcScenario(scenario) {
-    let totalUser = 0;
+function updateCalculation() {
+    const outputBox = document.getElementById("zk-output");
+    const totalLabel = document.getElementById("zk-total-value");
 
-    scenario.steps.forEach(step => {
-
-        switch (step.type) {
-
-            case "consult":
-                totalUser += calcConsult(step);
-                break;
-
-            case "medicatie":
-                totalUser += calcMedication(step);
-                break;
-
-            case "kine":
-                totalUser += calcKine(step);
-                break;
-
-            case "diagnostiek":
-                totalUser += calcDiagnostic(step);
-                break;
-
-            case "operation":
-                totalUser += calcOperation(step);
-                break;
-
-            case "SSR":
-                totalUser += step.days * step.forfait_jour;
-                break;
-
-            case "ambulance":
-                totalUser += calcAmbulance(step);
-                break;
-
-            case "urgence":
-                // Spoed kost user niets (ticket modérateur afhankelijk)
-                break;
-
-            case "traitement":
-                totalUser += step.cost;
-                break;
-        }
-
-    });
-
-    return totalUser;
-}
-
-// ------------------------------------------------------------
-// SUBCALC ENGINES
-// ------------------------------------------------------------
-
-function calcConsult(step) {
-    const brss = step.brss || 25;
-    let ameliRate = ZK_STATE.ald ? 1 : 0.70;
-
-    if (!ZK_STATE.traitant && step.role !== "huisarts" && !ZK_STATE.ald) {
-        ameliRate = 0.30;
+    // Als er geen scenario is gekozen, maak scherm leeg
+    if (!ZK_STATE.scenario) {
+        outputBox.innerHTML = "";
+        totalLabel.textContent = "€ 0,00";
+        return;
     }
 
-    const ameli = brss * ameliRate;
-    const mutLimit = brss * ZK_STATE.mutuelle;
+    // STAP A: Roep de engine aan (scenarioEngine.js)
+    // Dit doet al het zware rekenwerk (Ameli, Mutuelle, ALD, etc.)
+    const result = zkRunScenario(ZK_STATE.scenario, ZK_STATE);
 
-    let mutuelle = 0;
-    let user = step.cost - ameli;
+    if (!result) return; // Veiligheid
 
-    if (ZK_STATE.mutuelle > 0) {
-        mutuelle = Math.min(user, mutLimit - ameli);
-        user = Math.max(0, user - mutuelle);
-    }
+    // STAP B: Update het totaalbedrag in de header
+    totalLabel.textContent = formatMoney(result.totals.user);
 
-    return user + 2; // forfait
-}
-
-function calcMedication(step) {
-    // franchise 1€/doosje
-    const count = step.items.length;
-    return count * 1.00;
-}
-
-function calcKine(step) {
-    return step.sessions * step.franchise;
-}
-
-function calcDiagnostic(step) {
-    const cost = ZK_STATE.private ? (step.cost_private.base + (step.cost_private.supplement || 0)) : step.cost_public;
-    const brss = step.brss;
-
-    const ameli = brss * (ZK_STATE.ald ? 1 : 0.70);
-    const mutLimit = brss * ZK_STATE.mutuelle;
-
-    let mutuelle = Math.min(cost - ameli, mutLimit - ameli);
-    if (ZK_STATE.mutuelle === 0) mutuelle = 0;
-
-    const user = Math.max(0, cost - ameli - mutuelle);
-    return user;
-}
-
-function calcOperation(step) {
-    const base = ZK_STATE.private ? (step.cost_private.base + step.cost_private.supplement) : step.cost_public;
-    let user = base - step.brss;
-
-    user += step.days * step.forfait_jour;
-    return Math.max(0, user);
-}
-
-function calcAmbulance(step) {
-    return step.base + step.distance_km * step.supplement_km;
+    // STAP C: Render de details (HTML genereren)
+    renderResults(result, outputBox);
 }
 
 // ------------------------------------------------------------
-// RENDER SCENARIO OUTPUT
+// 4. HTML GENERATOR (Gebruikt jouw CSS classes)
 // ------------------------------------------------------------
-function renderScenario(s) {
-    const box = document.getElementById("zk-output");
-    box.innerHTML = `
-        <div class="zk-detail-box">
-            <h2>${s.label}</h2>
-            <p>${s.description}</p>
+function renderResults(result, container) {
+    const { scenario, steps, totals } = result;
+
+    let html = "";
+
+    // 1. Intro blok
+    html += `
+        <div class="zk-block">
+            <h4>${scenario.label}</h4>
+            <p>${scenario.description}</p>
+            <div class="zk-row" style="font-weight:bold; border-top:2px solid #eee; padding-top:10px;">
+                <span>Totaal eigen bijdrage:</span>
+                <span style="color:var(--red);">${formatMoney(totals.user)}</span>
+            </div>
+            <div class="zk-row" style="font-size:0.9em; color:#666;">
+                <span>Vergoed door Sécu (Ameli):</span>
+                <span>${formatMoney(totals.ameli)}</span>
+            </div>
+            <div class="zk-row" style="font-size:0.9em; color:#666;">
+                <span>Vergoed door Mutuelle:</span>
+                <span>${formatMoney(totals.mutuelle)}</span>
+            </div>
         </div>
     `;
+
+    // 2. Loop door alle stappen
+    steps.forEach((step, index) => {
+        
+        // Check of er notities zijn (bijv: "Franchise €1")
+        const notesHtml = step.notes.length > 0 
+            ? `<div style="font-size:0.85em; color:#d32f2f; margin-top:4px;">Let op: ${step.notes.join(", ")}</div>` 
+            : "";
+
+        html += `
+            <div class="zk-block" style="padding: 15px; margin-bottom: 15px;">
+                <h4 style="font-size:16px; margin-bottom:5px;">Stap ${index + 1}: ${capitalize(step.label)}</h4>
+                
+                <div class="zk-row">
+                    <span>Kosten (Bruto):</span>
+                    <span>${formatMoney(step.raw.cost || step.raw.brss)}</span> 
+                    </div>
+
+                <div class="zk-row" style="color:#666; font-size:0.9em;">
+                    <span>- Ameli (Basis):</span>
+                    <span>${formatMoney(step.cost_ameli)}</span>
+                </div>
+
+                <div class="zk-row" style="color:#666; font-size:0.9em;">
+                    <span>- Mutuelle:</span>
+                    <span>${formatMoney(step.cost_mutuelle)}</span>
+                </div>
+
+                <div class="zk-row" style="font-weight:bold; color:var(--red);">
+                    <span>Jij betaalt:</span>
+                    <span>${formatMoney(step.cost_user)}</span>
+                </div>
+
+                ${notesHtml}
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
 }
 
 // ------------------------------------------------------------
-// UPDATE TOTAL
+// 5. HELPERS
 // ------------------------------------------------------------
-function updateTotal() {
-    if (!ZK_STATE.scenario) return;
-
-    const scenario = ZK_SCENARIOS.find(s => s.id === ZK_STATE.scenario);
-    const total = calcScenario(scenario);
-
-    document.getElementById("zk-total-value").textContent = €(total);
-    renderScenario(scenario);
+function formatMoney(amount) {
+    // Zorgt voor nette euro notatie: € 25,50
+    return "€ " + amount.toFixed(2).replace(".", ",");
 }
 
-// ------------------------------------------------------------
-// EVENT LISTENERS
-// ------------------------------------------------------------
-document.getElementById("zk-status").onchange = e => {
-    ZK_STATE.status = e.target.value;
-    updateTotal();
-};
+function capitalize(s) {
+    if(!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
-document.getElementById("zk-mutuelle").onchange = e => {
-    ZK_STATE.mutuelle = Number(e.target.value);
-    updateTotal();
-};
-
-document.getElementById("zk-opt-ald").onchange = e => {
-    ZK_STATE.ald = e.target.checked;
-    updateTotal();
-};
-
-document.getElementById("zk-opt-traitant").onchange = e => {
-    ZK_STATE.traitant = e.target.checked;
-    updateTotal();
-};
-
-document.getElementById("zk-opt-private").onchange = e => {
-    ZK_STATE.private = e.target.checked;
-    updateTotal();
-};
-
-document.getElementById("zk-scenario-select").onchange = e => {
-    ZK_STATE.scenario = e.target.value;
-    updateTotal();
-};
-
-// ------------------------------------------------------------
-// INITIALIZE
-// ------------------------------------------------------------
-initScenarioDropdown();
+// Start de app
+initApp();
