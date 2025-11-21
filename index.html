@@ -1,196 +1,180 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="utf-8">
-    <title>Zorgkompas Frankrijk</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Zorgkompas Frankrijk</title>
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<!-- ======================== DASHBOARD ======================== -->
-<div id="zk-dashboard">
-    <select id="zk-profiel">
-        <option value="worker">A. Werkende / ZZP (URSSAF)</option>
-        <option value="pension">B. Gepensioneerde (S1 / CAK)</option>
-        <option value="resident">C. Inwoner (PUMa / CSM)</option>
-    </select>
+<!-- DASHBOARD -->
+<div class="fz-dashboard-sticky">
+    <div>
+        <div class="fz-dash-title">Jouw Zorgprofiel</div>
+        <div style="font-size:14px;">Instellingen gelden voor alle fases</div>
+    </div>
 
-    <select id="zk-mutuelle">
-        <option value="0">Geen Mutuelle</option>
-        <option value="1">100%</option>
-        <option value="2">200%</option>
-        <option value="3">300%</option>
-        <option value="4" selected>400%</option>
-    </select>
+    <div class="fz-dash-controls">
 
-    <label class="zk-check">
-        <input type="checkbox" id="zk-ald">
-        <span>ALD</span>
-    </label>
+        <select id="profile-status" class="fz-dash-select" onchange="updateSystem()">
+            <option value="worker">A. Werkende / ZZP</option>
+            <option value="pensioner">B. Gepensioneerd (S1)</option>
+            <option value="resident">C. Inwoner (PUMa/CSM)</option>
+        </select>
 
-    <label class="zk-check">
-        <input type="checkbox" id="zk-traitant" checked>
-        <span>Médecin Traitant</span>
-    </label>
+        <select id="profile-mutuelle" class="fz-dash-select" onchange="updateSystem()">
+            <option value="0">Geen Mutuelle</option>
+            <option value="1">100%</option>
+            <option value="2" selected>200%</option>
+            <option value="3">300%</option>
+            <option value="4">400%</option>
+        </select>
 
-    <div id="zk-total-box">
-        <div id="zk-total-label">U betaalt (indicatie):</div>
-        <div id="zk-total-value">€ 0,00</div>
-        <div id="zk-total-warnings"></div>
+        <label class="fz-checkbox-wrapper">
+            <input type="checkbox" id="profile-ald" onchange="updateSystem()">
+            <span>ALD</span>
+        </label>
+
+        <label class="fz-checkbox-wrapper">
+            <input type="checkbox" id="setting-traitant" checked onchange="updateSystem()">
+            <span>Médecin Traitant</span>
+        </label>
     </div>
 </div>
 
 
-<!-- ======================== CONTENT ======================== -->
-<div class="zk-section">
-    <div class="zk-h2">1. De Poort: Instroom</div>
+<div style="padding:20px;">
+<h1 style="color:#800000;margin-top:0;">Het Franse Zorgkompas</h1>
+<p>Doorloop de fases en zie direct wat er financieel gebeurt.</p>
 
-    <div class="zk-card" data-scenario="instroom">
-        <h3>Instroomproblemen</h3>
-        <p>CPAM, URSSAF, S1-verwerking</p>
+<!-- ===== FASE 1 ===== -->
+<div class="fz-section">
+    <div class="fz-section-header">
+        <div class="fz-step-num">1</div>
+        <h2 class="fz-section-title">Instroom & Administratie</h2>
+    </div>
+
+    <div class="fz-content">
+        <div class="fz-text-block">
+            <strong id="txt-entry-title">...</strong><br>
+            <span id="txt-entry-desc">...</span>
+        </div>
+
+        <div class="fz-calc-module">
+            <strong>Cruciale actie: huisarts-registratie</strong><br>
+            Geen médecin traitant = 30% vergoeding i.p.v. 70%.
+        </div>
     </div>
 </div>
 
-
-<div class="zk-section">
-    <div class="zk-h2">2. Consult & Specialist</div>
-
-    <div class="zk-card" data-scenario="huisarts_s1">
-        <h3>Huisarts S1</h3>
-        <p>Consult zonder supplement</p>
+<!-- ===== FASE 2 ===== -->
+<div class="fz-section">
+    <div class="fz-section-header">
+        <div class="fz-step-num">2</div>
+        <h2 class="fz-section-title">Huisarts & Specialist</h2>
     </div>
 
-    <div class="zk-card" data-scenario="huisarts_s2">
-        <h3>Huisarts S2</h3>
-        <p>Met supplementen</p>
-    </div>
+    <div class="fz-content">
+        <div class="fz-text-block">
+            Huisarts (S1/S2) en Specialisten. Secteur 2 rekent supplementen.
+        </div>
 
-    <div class="zk-card" data-scenario="spec_s1">
-        <h3>Specialist S1</h3>
-        <p>Cardio, longarts, etc.</p>
-    </div>
+        <div class="fz-calc-module">
+            <div style="margin-bottom:15px;font-weight:bold;">Scenario: Consult / Specialist</div>
 
-    <div class="zk-card" data-scenario="spec_s2">
-        <h3>Specialist S2</h3>
-        <p>Hoog supplement</p>
-    </div>
+            <select id="input-f2-cost" class="fz-dash-select" onchange="updateSystem()">
+                <option value="30">Huisarts S1 (€30)</option>
+                <option value="50" selected>Specialist S2 (€50)</option>
+                <option value="80">Specialist Parijs (€80)</option>
+            </select>
 
-    <div class="zk-card" data-scenario="buiten_parcours">
-        <h3>Buiten Parcours</h3>
-        <p>Zonder doorverwijzing</p>
-    </div>
-</div>
+            <div class="fz-calc-row"><span>Ameli:</span><span id="res-f2-ameli">€ 0,00</span></div>
+            <div class="fz-calc-row"><span>Mutuelle:</span><span id="res-f2-mut">€ 0,00</span></div>
+            <div class="fz-calc-row"><span>Forfait:</span><span>- € 1,00</span></div>
 
+            <div class="fz-calc-total">
+                <div class="fz-calc-row"><span>Jij betaalt:</span><span id="res-f2-user">€ 0,00</span></div>
+            </div>
 
-<div class="zk-section">
-    <div class="zk-h2">3. Paramedische Zorg</div>
-
-    <div class="zk-card" data-scenario="kine">
-        <h3>Kiné</h3>
-        <p>20 sessies</p>
-    </div>
-
-    <div class="zk-card" data-scenario="med_100">
-        <h3>Medicijnen 100% (ALD)</h3>
-        <p>Chronische middelen</p>
-    </div>
-
-    <div class="zk-card" data-scenario="med_65">
-        <h3>Medicijnen 65%</h3>
-        <p>Standaard categorie</p>
-    </div>
-
-    <div class="zk-card" data-scenario="med_30">
-        <h3>Medicijnen 30%</h3>
-        <p>Lichte middelen</p>
-    </div>
-
-    <div class="zk-card" data-scenario="med_15">
-        <h3>Medicijnen 15%</h3>
-        <p>Weinig vergoed</p>
-    </div>
-
-    <div class="zk-card" data-scenario="diabetes">
-        <h3>Diabetespakket</h3>
-        <p>Insuline, strips, materialen</p>
+            <button class="fz-toggle-btn" onclick="toggleDetails('det-f2')">Toon berekening</button>
+            <div id="det-f2" class="fz-details"></div>
+        </div>
     </div>
 </div>
 
-
-<div class="zk-section">
-    <div class="zk-h2">4. Diagnostiek</div>
-
-    <div class="zk-card" data-scenario="xray">
-        <h3>Röntgen</h3>
+<!-- ===== FASE 3 ===== -->
+<div class="fz-section">
+    <div class="fz-section-header">
+        <div class="fz-step-num">3</div>
+        <h2 class="fz-section-title">Fysio & Medicijnen</h2>
     </div>
 
-    <div class="zk-card" data-scenario="echo">
-        <h3>Echo</h3>
-    </div>
+    <div class="fz-content">
 
-    <div class="zk-card" data-scenario="mri">
-        <h3>MRI</h3>
-    </div>
+        <div class="fz-calc-module">
+            <div style="margin-bottom:10px;font-weight:bold;">Kiné 20 sessies</div>
+            <div class="fz-calc-row"><span>Ameli:</span><span id="res-f3-ameli">€ 0,00</span></div>
+            <div class="fz-calc-row"><span>Mutuelle:</span><span id="res-f3-mut">€ 0,00</span></div>
 
-    <div class="zk-card" data-scenario="biopsie">
-        <h3>Biopsie</h3>
-    </div>
-
-    <div class="zk-card" data-scenario="ctpet">
-        <h3>CT / PET</h3>
-    </div>
-
-    <div class="zk-card" data-scenario="onco_diag">
-        <h3>Oncologie Diagnostiek</h3>
+            <div class="fz-calc-total">
+                <div class="fz-calc-row"><span>Jij betaalt:</span><span id="res-f3-user">€ 0,00</span></div>
+            </div>
+        </div>
     </div>
 </div>
 
-
-<div class="zk-section">
-    <div class="zk-h2">5. Ziekenhuis & Operatie</div>
-
-    <div class="zk-card" data-scenario="hosp_pub">
-        <h3>Publiek Ziekenhuis</h3>
+<!-- ===== FASE 4 ===== -->
+<div class="fz-section">
+    <div class="fz-section-header">
+        <div class="fz-step-num">4</div>
+        <h2 class="fz-section-title">Ziekenhuis</h2>
     </div>
 
-    <div class="zk-card" data-scenario="hosp_priv">
-        <h3>Privékliniek (Secteur 2)</h3>
-    </div>
+    <div class="fz-content">
+        <div class="fz-text-block">
+            Publiek = weinig risico. Privé = forse supplementen.
+        </div>
 
-    <div class="zk-card" data-scenario="op_heup">
-        <h3>Heupoperatie</h3>
-    </div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;">
+            <button id="btn-hosp-pub" class="fz-dash-select" onclick="setHospital('pub')" style="background:#800000;color:white;border:2px solid #800000;">Publiek</button>
+            <button id="btn-hosp-priv" class="fz-dash-select" onclick="setHospital('priv')">Privé (S2)</button>
+        </div>
 
-    <div class="zk-card" data-scenario="op_hernia">
-        <h3>Hernia-operatie</h3>
-    </div>
+        <div class="fz-calc-module">
+            <div style="margin-bottom:15px;font-weight:bold;">Scenario: Heupoperatie</div>
 
-    <div class="zk-card" data-scenario="op_onco">
-        <h3>Onco-operatie</h3>
+            <div class="fz-calc-row"><span>Basis:</span><span>€ 2.300</span></div>
+            <div class="fz-calc-row" id="row-supplements"><span>Supplementen:</span><span>€ 1.200</span></div>
+            <div class="fz-calc-row"><span>Forfait (5 dagen):</span><span>€ 100</span></div>
+
+            <div class="fz-calc-row"><span>Ameli:</span><span id="res-f4-ameli">€ 0,00</span></div>
+            <div class="fz-calc-row"><span>Mutuelle:</span><span id="res-f4-mut">€ 0,00</span></div>
+
+            <div class="fz-calc-total">
+                <div class="fz-calc-row"><span>Jij betaalt:</span><span id="res-f4-user">€ 0,00</span></div>
+            </div>
+
+            <button class="fz-toggle-btn" onclick="toggleDetails('det-f4')">Toon analyse</button>
+            <div id="det-f4" class="fz-details"></div>
+        </div>
     </div>
 </div>
 
-
-<div class="zk-section">
-    <div class="zk-h2">6. Revalidatie (SSR)</div>
-
-    <div class="zk-card" data-scenario="ssr_pub">
-        <h3>SSR Publiek (21 dagen)</h3>
+<!-- ===== FASE 5 ===== -->
+<div class="fz-section">
+    <div class="fz-section-header">
+        <div class="fz-step-num">5</div>
+        <h2 class="fz-section-title">SSR Revalidatie</h2>
     </div>
 
-    <div class="zk-card" data-scenario="ssr_priv">
-        <h3>SSR Privé (30 dagen)</h3>
+    <div class="fz-content">
+        <div class="fz-calc-module">
+            <strong>30 dagen SSR:</strong> € 600 forfait<br>
+            <span id="res-f5-text">...</span>
+        </div>
     </div>
 </div>
 
-
-<!-- ======================== MODAL ======================== -->
-<div id="zk-modal">
-    <div id="zk-modal-content">
-        <span id="zk-close">&times;</span>
-        <div id="zk-modal-body"></div>
-    </div>
 </div>
 
 <script src="script.js"></script>
