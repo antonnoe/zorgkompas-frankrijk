@@ -3,60 +3,64 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Zorgkompas Frankrijk</title>
-    
+    <title>Zorgkompas Frankrijk - Educatieve Simulator</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
 <header id="zk-header">
-    <h1>Zorgkompas Frankrijk</h1>
-    <h2>Educatieve simulator voor het Franse zorgstelsel</h2>
+    <div class="header-content">
+        <h1>Zorgkompas Frankrijk</h1>
+        <h2>Financiële impact simulator (Tarieven 2025)</h2>
+    </div>
 </header>
 
 <div id="zk-dashboard">
-
     <div class="zk-dash-block">
         <label for="zk-status">Status verzekerde</label>
         <select id="zk-status">
-            <option value="worker">A. Werkende / Ondernemer (URSSAF)</option>
-            <option value="pensioner">B. Gepensioneerde (S1 / CAK)</option>
-            <option value="resident">C. Inwoner (PUMa)</option>
+            <option value="worker">Werkende (URSSAF/CPAM)</option>
+            <option value="pensioner">Gepensioneerde (S1/CAK)</option>
+            <option value="resident">Inactief / PUMa</option>
         </select>
     </div>
 
     <div class="zk-dash-block">
-        <label for="zk-mutuelle">Mutuelle (Dekking)</label>
+        <label for="zk-mutuelle">Mutuelle (Aanvullend)</label>
         <select id="zk-mutuelle">
-            <option value="0">Geen mutuelle</option>
+            <option value="0">Geen mutuelle (Alleen Sécu)</option>
             <option value="1">100% (Basis)</option>
             <option value="2" selected>200% (Gemiddeld)</option>
-            <option value="3">300% (Goed)</option>
+            <option value="3">300% (Comfort)</option>
             <option value="4">400% (Excellent)</option>
         </select>
     </div>
 
-    <div class="zk-dash-block">
-        <label>Opties & Situatie</label>
+    <div class="zk-dash-block wide">
+        <label>Situatie & Opties</label>
         <div class="zk-opt-row">
-            <label><input type="checkbox" id="zk-opt-ald" /> ALD (Chronisch)</label>
-            <label><input type="checkbox" id="zk-opt-traitant" checked /> Médecin Traitant</label>
-            <label><input type="checkbox" id="zk-opt-private" /> Privé kliniek</label>
+            <label title="Affection Longue Durée (Chronische ziekte)"><input type="checkbox" id="zk-opt-ald" /> ALD Status</label>
+            <label title="Eigen huisarts verklaard"><input type="checkbox" id="zk-opt-traitant" checked /> Médecin Traitant</label>
+            <label title="Behandeling in privékliniek"><input type="checkbox" id="zk-opt-private" /> Privé kliniek</label>
         </div>
     </div>
 
     <div id="zk-total">
-        <div class="zk-total-label">U betaalt (indicatie):</div>
+        <div class="zk-total-label">Indicatie eigen bijdrage:</div>
         <div id="zk-total-value" class="zk-total-value">€ 0,00</div>
-        <div class="zk-total-note">* Exclusief premie</div>
+        <div class="zk-total-note">Excl. maandelijkse premies</div>
     </div>
+</div>
 
-</div> <section id="zk-scenario-panel">
-    <h3>Kies een zorgvraag / scenario</h3>
+<section id="zk-scenario-panel">
+    <h3>Kies een zorgsituatie</h3>
     <select id="zk-scenario-select">
-        <option value="">-- Selecteer een situatie --</option>
-        </select>
+        <option value="">-- Selecteer een scenario --</option>
+    </select>
 </section>
 
 <div id="zk-detail-container">
@@ -64,7 +68,7 @@
 </div>
 
 <footer id="zk-footer">
-    <p><strong>Disclaimer:</strong> Het Zorgkompas Frankrijk is een educatieve simulator. Alle bedragen zijn indicatief en kunnen afwijken van de werkelijkheid.</p>
+    <p><strong>Disclaimer:</strong> Dit is een educatieve tool. Bedragen zijn schattingen o.b.v. tarieven 2025 en kunnen afwijken van uw persoonlijke situatie.</p>
 </footer>
 
 <script type="module" src="script.js"></script>
