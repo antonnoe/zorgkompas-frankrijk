@@ -1,235 +1,324 @@
-/* =======================================================================
-   ZORGKOMPAS FRANKRIJK — SCRIPT ARCHITECTUUR (MVP2)
-   ======================================================================= */
+/* ================================================================
+   NLFR Zorgkompas – Core JS (One-Page Dashboard)
+   ================================================================ */
 
-/* ---------------- STATE ---------------- */
-
+/* ---------------------- STATE ---------------------- */
 const state = {
     profile: "worker",
     mutuelle: 2.0,
     ald: false,
     traitant: true,
-    activeScenario: null,
+    activeScenario: null
 };
 
 
-/* ---------------- DASHBOARD INPUTS ---------------- */
+/* ---------------------- DASHBOARD INPUTS ---------------------- */
 
-document.getElementById("profile-status").addEventListener("change", e => {
+document.getElementById("zk-profiel").addEventListener("change", e => {
     state.profile = e.target.value;
     updateTotals();
 });
 
-document.getElementById("profile-mutuelle").addEventListener("change", e => {
+document.getElementById("zk-mutuelle").addEventListener("change", e => {
     state.mutuelle = parseFloat(e.target.value);
     updateTotals();
 });
 
-document.getElementById("profile-ald").addEventListener("change", e => {
+document.getElementById("zk-ald").addEventListener("change", e => {
     state.ald = e.target.checked;
     updateTotals();
 });
 
-document.getElementById("profile-traitant").addEventListener("change", e => {
+document.getElementById("zk-traitant").addEventListener("change", e => {
     state.traitant = e.target.checked;
     updateTotals();
 });
 
 
-/* ---------------- SCENARIO CLICK HANDLERS ---------------- */
 
-document.querySelectorAll(".scenario").forEach(card => {
+/* ---------------------- CARD CLICK HANDLING ---------------------- */
+
+document.querySelectorAll(".zk-card").forEach(card => {
     card.addEventListener("click", () => {
         const sc = card.dataset.scenario;
         state.activeScenario = sc;
-        runScenario(sc);
+        loadScenarioDetail(sc);
+        const cost = runScenario(sc);
+        updateTotals(cost);
     });
 });
 
 
-/* ---------------- BEREKENINGEN PER SCENARIO ---------------- */
+
+/* ---------------------- DETAIL PANEL TEMPLATE ---------------------- */
+
+function loadScenarioDetail(sc) {
+    const container = document.getElementById("zk-detail-container");
+
+    const titles = {
+        gp_s1: "Huisarts – Secteur 1",
+        gp_s2: "Huisarts – Secteur 2",
+        spec_s1: "Specialist – Secteur 1",
+        spec_s2: "Specialist – Secteur 2",
+        spec_out: "Specialist – Buiten Parcours",
+        kine_20: "Fysiotherapie – 20 sessies",
+        med_ald: "Medicijnen 100% (ALD)",
+        med_65: "Medicijnen 65%",
+        med_30: "Medicijnen 30%",
+        med_15: "Medicijnen 15%",
+        med_diab: "Diabetespakket",
+        diag_xray: "Röntgen",
+        diag_echo: "Echo",
+        diag_mri: "MRI",
+        diag_biopsy: "Biopsie",
+        diag_ctpet: "CT / PET",
+        diag_onco: "Oncologie Diagnostiek",
+        hosp_public: "Ziekenhuis – Publiek",
+        hosp_private: "Ziekenhuis – Privékliniek",
+        hosp_hip: "Heupoperatie",
+        hosp_hernia: "Hernia-operatie",
+        hosp_onco_op: "Oncologische operatie",
+        ssr_21: "Revalidatie – 21 dagen publiek",
+        ssr_30: "Revalidatie – 30 dagen privé"
+    };
+
+    container.innerHTML = `
+        <div class="zk-detail-box">
+            <div class="zk-detail-title">${titles[sc]}</div>
+            <div id="zk-detail-lines"></div>
+            <div id="zk-detail-warning"></div>
+        </div>
+    `;
+}
+
+
+
+/* ---------------------- CALCULATORS ---------------------- */
 
 function runScenario(sc) {
 
-    let userCost = 0;
-
     switch(sc) {
 
-        case "gp_s1":
-            userCost = calcGP(26.5, false);
-            break;
+        /* ===== CONSULTEN ===== */
+        case "gp_s1": return calcConsult(26.5, 0);
+        case "gp_s2": return calcConsult(26.5, 15);
 
-        case "gp_s2":
-            userCost = calcGP(40, true);
-            break;
+        case "spec_s1": return calcConsult(50, 0, true);
+        case "spec_s2": return calcConsult(80, 40, true);
+        case "spec_out": return calcConsult(50, 0, true, true);
 
-        case "spec_s1":
-            userCost = calcSpecialist(50, false);
-            break;
 
-        case "spec_s2":
-            userCost = calcSpecialist(80, true);
-            break;
+        /* ===== PARAMEDISCH ===== */
+        case "kine_20": return calcKine(20);
 
-        case "spec_out":
-            userCost = calcSpecialist(50, false, true);
-            break;
+        case "med_ald": return calcMedicine("ald");
+        case "med_65": return calcMedicine("65");
+        case "med_30": return calcMedicine("30");
+        case "med_15": return calcMedicine("15");
+        case "med_diab": return calcMedicine("diab");
 
-        case "kine_20":
-            userCost = calcKine(20);
-            break;
 
-        case "med_ald":
-            userCost = calcMedicine("ald");
-            break;
+        /* ===== DIAGNOSTIEK ===== */
+        case "diag_xray": return calcDiag("xray");
+        case "diag_echo": return calcDiag("echo");
+        case "diag_mri": return calcDiag("mri");
+        case "diag_biopsy": return calcDiag("biopsy");
+        case "diag_ctpet": return calcDiag("ctpet");
+        case "diag_onco": return calcDiag("onco");
 
-        case "med_65":
-            userCost = calcMedicine("65");
-            break;
 
-        case "med_30":
-            userCost = calcMedicine("30");
-            break;
+        /* ===== ZIEKENHUIS ===== */
+        case "hosp_public": return calcHosp("public");
+        case "hosp_private": return calcHosp("private");
+        case "hosp_hip": return calcHosp("hip");
+        case "hosp_hernia": return calcHosp("hernia");
+        case "hosp_onco_op": return calcHosp("onco_op");
 
-        case "med_15":
-            userCost = calcMedicine("15");
-            break;
 
-        case "med_diab":
-            userCost = calcMedicine("diab");
-            break;
+        /* ===== REVALIDATIE ===== */
+        case "ssr_21": return calcSSR(21, false);
+        case "ssr_30": return calcSSR(30, true);
 
-        case "diag_xray":
-            userCost = calcDiag("xray");
-            break;
-
-        case "diag_echo":
-            userCost = calcDiag("echo");
-            break;
-
-        case "diag_mri":
-            userCost = calcDiag("mri");
-            break;
-
-        case "diag_onco":
-            userCost = calcOnco();
-            break;
-
-        case "hosp_public":
-            userCost = calcHosp("public");
-            break;
-
-        case "hosp_private":
-            userCost = calcHosp("private");
-            break;
-
-        case "hosp_hip":
-            userCost = calcHosp("hip");
-            break;
-
-        case "hosp_hernia":
-            userCost = calcHosp("hernia");
-            break;
-
-        case "hosp_onco_op":
-            userCost = calcHosp("onco_op");
-            break;
-
-        case "ssr_21":
-            userCost = calcSSR(21, false);
-            break;
-
-        case "ssr_30_private":
-            userCost = calcSSR(30, true);
-            break;
-
-        default:
-            userCost = 0;
-            break;
+        default: return 0;
     }
-
-    updateTotals(userCost);
 }
 
 
-/* ---------------- CALC PLACEHOLDERS (worden in update uitgebreid) ---------------- */
 
-function calcGP(cost, supplement) {
-    let brss = 26.5;
-    let ro = state.traitant ? 0.7 : 0.3;
-    let ameli = brss * ro;
-    let mut = Math.max(0, (brss * state.mutuelle) - ameli);
-    let supplementAmt = supplement ? 15 : 0;
-    return cost + supplementAmt - ameli - mut;
-}
+/* ---------------------- CONSULT CALC ---------------------- */
 
-function calcSpecialist(cost, supplement, out = false) {
-    let brss = 23.0;
+function calcConsult(brss, supplement, isSpec = false, out = false) {
+    let fee = isSpec ? brss : brss;
+    let total = fee + supplement;
+
     let ro = out ? 0.3 : (state.traitant ? 0.7 : 0.3);
+    if (state.ald) ro = 1.0;
+
     let ameli = brss * ro;
-    let mut = Math.max(0, (brss * state.mutuelle) - ameli);
-    let supp = supplement ? 40 : 0;
-    return cost + supp - ameli - mut;
+    let mutLimit = brss * state.mutuelle;
+    let mutuelle = Math.max(0, mutLimit - ameli);
+
+    let user = total - (ameli + mutuelle);
+
+    renderDetail([
+        ["BRSS", euro(brss)],
+        ["Supplementen", euro(supplement)],
+        ["Ameli", euro(ameli)],
+        ["Mutuelle", euro(mutuelle)],
+        ["Totale Eigen Bijdrage", euro(user)]
+    ]);
+
+    return user;
 }
+
+
+
+/* ---------------------- KINÉ ---------------------- */
 
 function calcKine(n) {
-    let brss = 16.13;
-    let total = brss * n;
+    const brss = 16.13;
+    const total = n * brss;
+    const franchise = n * 1;
+
     let ro = state.ald ? 1.0 : 0.6;
     let ameli = total * ro;
-    let mut = total - ameli;
-    let franchise = n * 1;
-    return total - ameli - mut + franchise;
+    let mutuelle = total - ameli;
+    let user = franchise;
+
+    renderDetail([
+        ["Aantal Sessies", n],
+        ["Totale BRSS", euro(total)],
+        ["Franchise (nooit gedekt)", euro(franchise)],
+        ["Ameli", euro(ameli)],
+        ["Mutuelle", euro(mutuelle)],
+        ["U betaalt", euro(user)]
+    ]);
+
+    return user;
 }
+
+
+
+/* ---------------------- MEDICIJNEN ---------------------- */
 
 function calcMedicine(type) {
-    switch(type) {
-        case "ald": return 0;
-        case "65": return 15;
-        case "30": return 20;
-        case "15": return 25;
-        case "diab": return 40;
-    }
+    let user = {
+        ald: 0,
+        "65": 10,
+        "30": 18,
+        "15": 25,
+        diab: 40
+    }[type];
+
+    renderDetail([
+        ["Categorie", type],
+        ["Uw bijdrage (indicatie)", euro(user)]
+    ]);
+
+    return user;
 }
+
+
+
+/* ---------------------- DIAGNOSTIEK ---------------------- */
 
 function calcDiag(type) {
-    if (type === "xray") return 15;
-    if (type === "echo") return 20;
-    if (type === "mri") return 80;
-    return 200;
+
+    const prices = {
+        xray: 20,
+        echo: 35,
+        mri: 80,
+        biopsy: 120,
+        ctpet: 250,
+        onco: 350
+    };
+
+    const user = prices[type];
+
+    renderDetail([
+        ["Type", type],
+        ["Indicatieve Eigen Bijdrage", euro(user)]
+    ]);
+
+    return user;
 }
 
-function calcOnco() {
-    return 350; /* placeholder */
-}
+
+
+/* ---------------------- ZIEKENHUIS ---------------------- */
 
 function calcHosp(type) {
-    if (type === "public") return 100;
-    if (type === "private") return 400;
-    if (type === "hip") return 850;
-    if (type === "hernia") return 550;
-    if (type === "onco_op") return 1200;
-    return 0;
+    const values = {
+        public: 100,
+        private: 350,
+        hip: 850,
+        hernia: 550,
+        onco_op: 1200
+    };
+
+    const user = values[type];
+
+    renderDetail([
+        ["Ziekenhuis Scenario", type],
+        ["Eigen bijdrage (indicatie)", euro(user)]
+    ]);
+
+    return user;
 }
+
+
+
+/* ---------------------- SSR ---------------------- */
 
 function calcSSR(days, priv) {
-    let forfait = days * 20;
-    if (state.mutuelle > 0) return 0;
-    return forfait;
+    let raw = days * 20;
+    let user = (state.mutuelle > 0) ? 0 : raw;
+
+    renderDetail([
+        ["Dagen", days],
+        ["Forfait Journalier", euro(raw)],
+        ["Mutuelle dekt forfait", state.mutuelle > 0 ? "Ja" : "Nee"],
+        ["U betaalt", euro(user)]
+    ]);
+
+    return user;
 }
 
 
-/* ---------------- UPDATE TOTALS ---------------- */
 
-function updateTotals(userCost = 0) {
+/* ---------------------- DETAIL RENDER ---------------------- */
 
-    document.getElementById("zk-total-cost").textContent =
-        "€ " + userCost.toFixed(2);
+function renderDetail(lines) {
+    const box = document.getElementById("zk-detail-lines");
 
-    const alerts = [];
-    if (!state.traitant) alerts.push("Geen traitant → slechts 30% BRSS");
-    if (state.mutuelle < 2.0) alerts.push("Lage mutuelle → risico op supplementen");
+    box.innerHTML = lines
+        .map(row =>
+            `<div class="zk-detail-line"><span>${row[0]}</span><span>${row[1]}</span></div>`
+        )
+        .join("");
+}
 
-    document.getElementById("zk-total-alerts").innerHTML =
-        alerts.join("<br>");
+
+
+/* ---------------------- TOTAL RENDER ---------------------- */
+
+function updateTotals(cost = 0) {
+    document.getElementById("zk-total-value").textContent = euro(cost);
+
+    const warn = [];
+
+    if (!state.traitant) warn.push("Geen médecin traitant → slechts 30% BRSS");
+    if (state.mutuelle < 2.0) warn.push("Mutuelle <200% → risico op supplementen");
+    if (state.profile === "resident") warn.push("PUMa → let op CSM-heffing");
+
+    document.getElementById("zk-total-warnings").innerHTML =
+        warn.join("<br>");
+}
+
+
+
+/* ---------------------- UTIL ---------------------- */
+
+function euro(v) {
+    return "€ " + parseFloat(v).toFixed(2).replace(".", ",");
 }
