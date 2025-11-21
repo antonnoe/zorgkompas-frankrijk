@@ -1,220 +1,199 @@
-/* =======================================================================
-   ZORGKOMPAS — HUISSTIJL
-   ======================================================================= */
+/* ================================================================
+   NLFR Zorgkompas – CSS (One-Page Dashboard)
+   ================================================================ */
 
 :root {
-    --main:#800000;
-    --main-light:#f5eaea;
-    --text:#222;
-    --soft:#666;
-    --bg:#fafafa;
-    --border:#ddd;
-    --shadow:0 2px 8px rgba(0,0,0,0.08);
+    --main: #800000;
+    --main-light: #f6eaea;
+    --bg: #fafafa;
+    --text: #222;
+    --gray: #777;
+    --border: #d0d0d0;
+    --shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
 body {
-    margin:0;
-    padding:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    line-height:1.6;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
 }
 
 
-/* =======================================================================
-   HEADER
-   ======================================================================= */
 
-.zk-header {
-    max-width:900px;
-    margin:0 auto;
-    padding:40px 20px 10px 20px;
+/* ============================= */
+/*  FLOATING DASHBOARD           */
+/* ============================= */
+
+#zk-dashboard {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #2c3e50;
+    padding: 12px;
+    color: white;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 4px solid var(--main);
 }
 
-.zk-header h1 {
-    color:var(--main);
-    margin:0;
-    font-size:32px;
-    font-weight:bold;
+.zk-dash-group {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
 }
 
-.zk-subtitle {
-    margin:4px 0 15px;
-    font-size:18px;
-    color:var(--soft);
+.zk-dash-group select {
+    padding: 6px;
+    border-radius: 4px;
+    border: none;
+    outline: none;
 }
 
-.zk-disclaimer-short {
-    font-size:13px;
-    color:var(--soft);
-    border-left:3px solid var(--main);
-    padding-left:10px;
+.zk-dash-group.checkbox {
+    flex-direction: row;
+    align-items: center;
 }
 
-
-/* =======================================================================
-   STICKY DASHBOARD
-   ======================================================================= */
-
-.zk-dashboard {
-    position:sticky;
-    top:0;
-    z-index:90;
-    background:#2c3e50;
-    color:white;
-    padding:15px 12px;
-    display:flex;
-    gap:20px;
-    flex-wrap:wrap;
-    align-items:center;
-    justify-content:space-between;
-    box-shadow:var(--shadow);
-    border-bottom:4px solid var(--main);
+#zk-total-box {
+    background: white;
+    color: black;
+    padding: 8px 16px;
+    border-radius: 6px;
+    min-width: 160px;
+    text-align: center;
+    margin-left: auto;
 }
 
-.zk-dash-block {
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-    font-size:13px;
+#zk-total-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--main);
+    margin-top: 4px;
 }
 
-.zk-dash-block select {
-    padding:6px;
-    border-radius:4px;
-    border:none;
-}
-
-.zk-dash-block.checkbox {
-    flex-direction:row;
-    align-items:center;
-}
-
-.zk-info {
-    display:inline-block;
-    width:14px;
-    height:14px;
-    background:url("assets/info.svg") no-repeat center;
-    background-size:contain;
-    cursor:pointer;
-    margin-left:4px;
-}
-
-.zk-info:hover::after {
-    content:attr(data-tip);
-    position:absolute;
-    background:white;
-    color:black;
-    border:1px solid var(--border);
-    padding:6px 8px;
-    font-size:12px;
-    width:200px;
-    z-index:200;
-}
-
-.zk-dash-total {
-    padding:8px 12px;
-    background:white;
-    color:var(--text);
-    border-radius:6px;
-    min-width:180px;
-    text-align:center;
-}
-
-.zk-total-value {
-    font-size:20px;
-    font-weight:bold;
-    margin-top:4px;
-}
-
-.zk-total-alerts {
-    font-size:11px;
-    color:red;
-    margin-top:3px;
+#zk-total-warnings {
+    font-size: 11px;
+    color: red;
 }
 
 
-/* =======================================================================
-   SECTIONS
-   ======================================================================= */
 
-.zk-section {
-    max-width:900px;
-    margin:25px auto;
-    padding:20px;
-    background:white;
-    border:1px solid var(--border);
-    border-radius:8px;
-    box-shadow:var(--shadow);
+/* ============================= */
+/*  GRID                        */
+/* ============================= */
+
+#zk-grid {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 10px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
 }
 
-.zk-section-title {
-    color:var(--main);
-    font-size:22px;
-    margin:0 0 10px;
+.zk-column {
+    flex: 1;
 }
 
-.zk-section-text {
-    font-size:14px;
-    color:var(--soft);
-    margin-bottom:20px;
-}
-
-.zk-subblock {
-    margin:20px 0;
-}
-
-.zk-subnote {
-    font-size:12px;
-    color:var(--soft);
+.zk-column h2 {
+    color: var(--main);
+    font-size: 18px;
+    margin-bottom: 10px;
 }
 
 
-/* =======================================================================
-   CARDS & SCENARIOS
-   ======================================================================= */
+
+/* ============================= */
+/*  CARDS                       */
+/* ============================= */
 
 .zk-card {
-    padding:15px;
-    border:1px solid var(--border);
-    border-radius:6px;
-    background:var(--main-light);
-    margin:12px 0;
+    background: white;
+    border: 1px solid var(--border);
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: 0.1s;
 }
 
-.zk-card-list {
-    display:flex;
-    flex-wrap:wrap;
-    gap:12px;
+.zk-card:hover {
+    border-color: var(--main);
+    box-shadow: 0 3px 12px rgba(128,0,0,0.2);
 }
 
-.zk-card h5 {
-    margin:0 0 6px;
-    color:var(--main);
+.zk-card h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--main);
 }
 
-.zk-card.scenario {
-    cursor:pointer;
-    transition:0.15s;
-    flex:1 1 calc(50% - 12px);
-    min-width:220px;
-}
-
-.zk-card.scenario:hover {
-    background:white;
-    border-color:var(--main);
+.zk-card p {
+    font-size: 13px;
+    color: var(--gray);
+    margin-top: 4px;
 }
 
 
-/* =======================================================================
-   FOOTER
-   ======================================================================= */
 
-.zk-footer {
-    max-width:900px;
-    margin:40px auto;
-    padding:20px;
-    font-size:14px;
-    color:var(--soft);
+/* ============================= */
+/*  DETAIL PANEL                */
+/* ============================= */
+
+#zk-detail-container {
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+.zk-detail-box {
+    background: white;
+    border: 1px solid var(--main);
+    border-left: 6px solid var(--main);
+    padding: 20px;
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    margin-bottom: 25px;
+}
+
+.zk-detail-title {
+    font-size: 20px;
+    color: var(--main);
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.zk-detail-line {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed var(--border);
+    padding: 6px 0;
+    font-size: 14px;
+}
+
+.zk-detail-warning {
+    color: red;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.zk-detail-good {
+    color: green;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+
+
+/* ============================= */
+/*  RESPONSIVE                  */
+/* ============================= */
+
+@media (max-width: 1000px) {
+    #zk-grid {
+        flex-direction: column;
+    }
 }
