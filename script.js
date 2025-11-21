@@ -1,336 +1,285 @@
 /* ============================================================
-   NLFR ZORGKOMPAS – COMPLETE ENGINE (FINAL)
-   Werkt met jouw nieuwe tegel-UI
+   NLFR Zorgkompas – COMPLETE ENGINE (v1.0 Final)
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
+
     const totalValue = document.getElementById("zk-total-value");
     const warningsBox = document.getElementById("zk-total-warnings");
     const detailContainer = document.getElementById("zk-detail-container");
 
-    /* ======================================
-       PROFIELINSTELLINGEN (DASHBOARD)
-       ====================================== */
-    function settings() {
+    /* ==========================
+       INSTELLINGEN
+       ========================== */
+    function S() {
         return {
             profiel: document.getElementById("zk-profiel").value,
             mutuelle: parseFloat(document.getElementById("zk-mutuelle").value),
             ald: document.getElementById("zk-ald").checked,
-            traitant: document.getElementById("zk-traitant").checked,
+            traitant: document.getElementById("zk-traitant").checked
         };
     }
 
-    /* ======================================
-       ALGEMENE CONSTANTEN
-       ====================================== */
-    const FRANCHISE = 1.00;          // consult / fysio / medicijn
-    const FORFAIT_JOUR = 20.00;      // ziekenhuis per dag
+    /* ==========================
+       CONSTANTEN (OFFICIEEL)
+       ========================== */
+    const FRANCHISE = 1.00;           // €1 niet vergoedbaar
+    const FORFAIT_JOUR = 20.00;       // ziekenhuisbed per dag
 
-    const BRSS = {
-        GP: 26.50,
-        SPECIALIST: 23.00,
-        KINE: 16.13,
+    const BR = {
+        GP: 26.50,         // huisarts S1
+        SPEC: 23.00,       // specialist BRSS
+        KINE: 16.13,       // per sessie
         XRAY: 25.00,
         ECHO: 56.00,
         MRI: 90.00,
         BIOPSY: 95.00,
-        CT_PET: 150.00
+        CT: 150.00
     };
 
-    const REAL_COST = {
+    const COST = {
         GP_S1: 26.50,
         GP_S2: 35.00,
         SPEC_S1: 50.00,
         SPEC_S2: 80.00,
-        SPEC_OUT: 50.00, // buiten parcours
+        SPEC_OUT: 50.00,
         XRAY: 40.00,
         ECHO: 70.00,
         MRI: 300.00,
         BIOPSY: 150.00,
-        CT_PET: 450.00,
+        CT: 450.00,
         ONCO_DIAG: 900.00,
         HIP: 2300.00,
         HERNIA: 1500.00,
         ONCO_OP: 6300.00
     };
 
-    /* ======================================
-       HOOFDFORMULE
-       ====================================== */
-    function calcBase(brss, cost, ro, mutuelleFactor) {
-        const ameli = brss * ro;
-        const ticket = cost - ameli;
+    /* ============================================================
+       UNIVERSAL FORMULA
+       ============================================================ */
+    function calc(brss, cost, ro, mutFactor, franchiseApplies = true) {
 
-        let mutCover = 0;
-        if (mutuelleFactor > 0) {
-            const mutLimit = brss * mutuelleFactor - ameli;
-            mutCover = Math.min(ticket, Math.max(mutLimit, 0));
+        // 1) Ameli BEFORE franchise
+        let ameliGross = brss * ro;
+
+        // 2) Franchise: gaat ALTIJD van AMELI → min 0
+        let franchise = franchiseApplies ? FRANCHISE : 0;
+        let ameliNet = Math.max(0, ameliGross - franchise);
+        let franchiseUsed = Math.min(franchise, ameliGross);
+
+        // 3) Ticket modérateur (rest van BRSS)
+        const TICKET = Math.max(0, brss - ameliGross);
+
+        // 4) Mutuelle dekt alleen ticket modérateur
+        let mut = mutFactor > 0 ? TICKET : 0;
+
+        // 5) Supplementen (kosten - BRSS) → patiënt of mutuelle
+        let supplement = Math.max(0, cost - brss);
+        let mutSupp = 0;
+
+        if (mutFactor > 0) {
+            const limit = brss * mutFactor - ameliGross;
+            mutSupp = Math.min(supplement, Math.max(limit, 0));
         }
 
-        const user = cost - ameli - mutCover;
-        return { ameli, mutCover, user };
+        let user = 
+            cost               // totale kostprijs
+            - ameliNet         // ameli netto
+            - mut              // mutuelle ticket
+            - mutSupp;         // mutuelle supplement
+
+        return {
+            ameli: ameliNet,
+            mut: mut + mutSupp,
+            user,
+            franchiseUsed
+        };
     }
 
-    /* ======================================
-       SCENARIO DEFINITIES
-       ====================================== */
-    const scenarios = {
+    /* ============================================================
+       SCENARIO’S
+       ============================================================ */
+    const SC = {
+
+        /* ----------- CONSULTEN ------------- */
+
         gp_s1: () => {
-            const s = settings();
-            const brss = BRSS.GP;
-            const cost = REAL_COST.GP_S1;
+            const s = S();
+            let ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
 
-            let ro = s.ald ? 1.0 : (s.traitant ? 0.7 : 0.3);
-
-            const base = calcBase(brss, cost, ro, s.mutuelle);
-            const franchise = FRANCHISE;
-
-            return {
-                title: "Huisarts S1",
-                brss,
-                cost,
-                ameli: base.ameli - franchise,
-                mut: base.mutCover,
-                user: base.user + franchise,
-                note: "Franchise is wettelijk verplicht, mutuelle mag niet vergoeden."
-            };
+            const r = calc(BR.GP, COST.GP_S1, ro, s.mutuelle);
+            return out("Huisarts S1", BR.GP, COST.GP_S1, r, 
+                "Franchise €1 is verplicht, nooit gedekt.");
         },
 
         gp_s2: () => {
-            const s = settings();
-            const brss = BRSS.GP;
-            const cost = REAL_COST.GP_S2;
-            let ro = s.ald ? 1.0 : (s.traitant ? 0.7 : 0.3);
-            const base = calcBase(brss, cost, ro, s.mutuelle);
+            const s = S();
+            let ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
 
-            return {
-                title: "Huisarts S2 (met supplement)",
-                brss,
-                cost,
-                ameli: base.ameli - FRANCHISE,
-                mut: base.mutCover,
-                user: base.user + FRANCHISE,
-                note: "Supplementen vallen buiten BRSS: mutuelle dekt slechts deel."
-            };
+            const r = calc(BR.GP, COST.GP_S2, ro, s.mutuelle);
+            return out("Huisarts S2 (met supplement)", BR.GP, COST.GP_S2, r,
+                "Secteur 2 supplementen vallen buiten BRSS.");
         },
 
         spec_s1: () => {
-            const s = settings();
-            const brss = BRSS.SPECIALIST;
-            const cost = REAL_COST.SPEC_S1;
-            let ro = s.ald ? 1.0 : (s.traitant ? 0.7 : 0.3);
-            const base = calcBase(brss, cost, ro, s.mutuelle);
+            const s = S();
+            let ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
 
-            return {
-                title: "Specialist S1",
-                brss,
-                cost,
-                ameli: base.ameli - FRANCHISE,
-                mut: base.mutCover,
-                user: base.user + FRANCHISE,
-                note: ""
-            };
+            const r = calc(BR.SPEC, COST.SPEC_S1, ro, s.mutuelle);
+            return out("Specialist S1", BR.SPEC, COST.SPEC_S1, r);
         },
 
         spec_s2: () => {
-            const s = settings();
-            const brss = BRSS.SPECIALIST;
-            const cost = REAL_COST.SPEC_S2;
-            let ro = s.ald ? 1.0 : (s.traitant ? 0.7 : 0.3);
-            const base = calcBase(brss, cost, ro, s.mutuelle);
+            const s = S();
+            let ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
 
-            return {
-                title: "Specialist S2 (met supplementen)",
-                brss,
-                cost,
-                ameli: base.ameli - FRANCHISE,
-                mut: base.mutCover,
-                user: base.user + FRANCHISE,
-                note: "Let op: Secteur 2 supplementen kunnen hoog oplopen."
-            };
+            const r = calc(BR.SPEC, COST.SPEC_S2, ro, s.mutuelle);
+            return out("Specialist S2 (supplementen)", BR.SPEC, COST.SPEC_S2, r,
+                "Secteur 2 supplementen kunnen sterk oplopen.");
         },
 
         spec_out: () => {
-            const s = settings();
-            const brss = BRSS.SPECIALIST;
-            const cost = REAL_COST.SPEC_OUT;
-            let ro = 0.30; // altijd 30% BRSS buiten parcours
-
-            const base = calcBase(brss, cost, ro, s.mutuelle);
-
-            return {
-                title: "Specialist (Buiten Parcours)",
-                brss,
-                cost,
-                ameli: base.ameli - FRANCHISE,
-                mut: base.mutCover,
-                user: base.user + FRANCHISE,
-                note: "Geen verwijzing → Ameli vergoedt slechts 30% BRSS."
-            };
+            const s = S();
+            const r = calc(BR.SPEC, COST.SPEC_OUT, 0.30, s.mutuelle);
+            return out("Specialist (Buiten Parcours)", BR.SPEC, COST.SPEC_OUT, r,
+                "Geen traitant → Ameli vergoedt 30% BRSS.");
         },
+
+
+        /* ----------- PARAMEDISCH ------------- */
 
         kine_20: () => {
-            const s = settings();
-            const brss = BRSS.KINE * 20;
-            const cost = REAL_COST.KINE ? REAL_COST.KINE : 322.60;
+            const s = S();
+            const totalBRSS = BR.KINE * 20;
+            const totalCost = 16.13 * 20;
 
-            const ro = s.ald ? 1.0 : 0.6;
-            let ameli = brss * ro;
+            let ro = s.ald ? 1 : 0.6;
 
-            const mut = s.mutuelle > 0 ? brss - ameli : 0;
-            const user = 20 * FRANCHISE;
+            const r = calc(totalBRSS, totalCost, ro, s.mutuelle, false);
 
-            return {
-                title: "Kiné (20 sessies)",
-                brss,
-                cost,
-                ameli,
-                mut,
-                user,
-                note: "Franchise (€20 totaal) nooit vergoed."
-            };
+            // Franchise is 20 × €1
+            const user = r.user + 20;
+
+            return out("Kiné – 20 sessies", totalBRSS, totalCost,
+                { ameli: r.ameli, mut: r.mut, user },
+                "Franchise €20 nooit gedekt.");
         },
 
-        // =============================
-        // Diagnostiek
-        // =============================
-        diag_xray: () => basicDiag("Röntgen", BRSS.XRAY, REAL_COST.XRAY),
-        diag_echo: () => basicDiag("Echo", BRSS.ECHO, REAL_COST.ECHO),
-        diag_mri: () => basicDiag("MRI", BRSS.MRI, REAL_COST.MRI),
-        diag_biopsy: () => basicDiag("Biopsie", BRSS.BIOPSY, REAL_COST.BIOPSY),
-        diag_ctpet: () => basicDiag("CT / PET", BRSS.CT_PET, REAL_COST.CT_PET),
 
-        diag_onco: () => {
-            return basicDiag("Oncologische Diagnostiek", 200.00, REAL_COST.ONCO_DIAG);
+        /* ----------- DIAGNOSTIEK ------------- */
+        diag_xray: () => diag("Röntgen", BR.XRAY, COST.XRAY),
+        diag_echo: () => diag("Echo", BR.ECHO, COST.ECHO),
+        diag_mri: () => diag("MRI", BR.MRI, COST.MRI),
+        diag_biopsy: () => diag("Biopsie", BR.BIOPSY, COST.BIOPSY),
+        diag_ctpet: () => diag("CT/PET", BR.CT, COST.CT),
+        diag_onco: () => diag("Oncologie Diagnostiek", 200, COST.ONCO_DIAG),
+
+
+        /* ----------- ZIEKENHUIS ------------- */
+
+        hosp_public: () => {
+            const s = S();
+            const base = COST.HIP;
+            const days = 5;
+            const forfait = days * FORFAIT_JOUR;
+
+            const ameli = base; // zware ingreep → 100%
+
+            let mut = s.mutuelle > 0 ? forfait : 0;
+            let userSupp = 0;  
+
+            return out("Publiek Ziekenhuis", base, base + forfait,
+                { ameli, mut, user: userSupp }, "");
         },
 
-        // =============================
-        // Ziekenhuis & Operaties
-        // =============================
-        hosp_public: () => hospitalCalc("Publiek ziekenhuis", 0),
-        hosp_private: () => hospitalCalc("Privékliniek (Secteur 2)", 1200),
-        hosp_hip: () => hospitalOp("Heupoperatie", REAL_COST.HIP, 1200),
-        hosp_hernia: () => hospitalOp("Hernia Operatie", REAL_COST.HERNIA, 600),
-        hosp_onco_op: () => hospitalOp("Oncologische operatie", REAL_COST.ONCO_OP, 1800),
+        hosp_private: () => {
+            const s = S();
+            const base = COST.HIP;
+            const supp = 1200;
+            const days = 5;
+            const forfait = days * FORFAIT_JOUR;
 
-        // =============================
-        // Revalidatie
-        // =============================
-        ssr_21: () => {
-            const s = settings();
-            return {
-                title: "SSR — 21 dagen",
-                brss: 0,
-                cost: 21 * FORFAIT_JOUR,
-                ameli: 0,
-                mut: s.mutuelle > 0 ? 21 * FORFAIT_JOUR : 0,
-                user: s.mutuelle > 0 ? 0 : 21 * FORFAIT_JOUR,
-                note: ""
-            };
+            const ameli = base;
+            let mut = s.mutuelle > 0 ? forfait : 0;
+
+            let limit = base * s.mutuelle - ameli;
+            let covered = Math.min(supp, Math.max(limit, 0));
+            mut += covered;
+            let user = supp - covered;
+
+            return out("Privékliniek Secteur 2", base, base + supp + forfait,
+                { ameli, mut, user },
+                "Supplementen vaak hoog.");
         },
 
-        ssr_30: () => {
-            const s = settings();
-            return {
-                title: "SSR — 30 dagen",
-                brss: 0,
-                cost: 30 * FORFAIT_JOUR,
-                ameli: 0,
-                mut: s.mutuelle > 0 ? 30 * FORFAIT_JOUR : 0,
-                user: s.mutuelle > 0 ? 0 : 30 * FORFAIT_JOUR,
-                note: ""
-            };
-        }
+        hosp_hip: () => operation("Heupoperatie", COST.HIP, 1200),
+        hosp_hernia: () => operation("Hernia-operatie", COST.HERNIA, 600),
+        hosp_onco_op: () => operation("Onco-operatie", COST.ONCO_OP, 1800),
+
+
+        /* ----------- SSR ------------- */
+
+        ssr_21: () => ssr("SSR 21 dagen", 21),
+        ssr_30: () => ssr("SSR 30 dagen", 30)
     };
 
-    /* ======================================
-       HELPER: BASIC DIAGNOSTIEK
-       ====================================== */
-    function basicDiag(title, brss, cost) {
-        const s = settings();
-        const ro = s.ald ? 1.0 : (s.traitant ? 0.7 : 0.3);
-        const base = calcBase(brss, cost, ro, s.mutuelle);
 
+    /* ============================================================
+       HELPERFUNCTIES
+       ============================================================ */
+
+    function out(title, brss, cost, r, note = "") {
         return {
-            title,
-            brss,
-            cost,
-            ameli: base.ameli,
-            mut: base.mutCover,
-            user: base.user,
-            note: ""
+            title, brss, cost,
+            ameli: r.ameli,
+            mut: r.mut,
+            user: r.user,
+            note
         };
     }
 
-    /* ======================================
-       HELPER: ZIEKENHUIS BASIS
-       ====================================== */
-    function hospitalCalc(title, supplements) {
-        const s = settings();
-        const base = REAL_COST.HIP;
-        const ameli = base; // zware ingrepen → 100% BRSS
-
-        let mut = 0;
-        let userSupp = supplements;
-
-        if (s.mutuelle > 0) {
-            mut += 5 * FORFAIT_JOUR;
-            const limit = base * s.mutuelle - ameli;
-            const suppCovered = Math.min(supplements, Math.max(limit, 0));
-            mut += suppCovered;
-            userSupp -= suppCovered;
-        }
-
-        const user = 5 * FORFAIT_JOUR + userSupp;
-
-        return {
-            title,
-            brss: base,
-            cost: base + supplements + 5 * FORFAIT_JOUR,
-            ameli,
-            mut,
-            user,
-            note: ""
-        };
+    function diag(title, brss, cost) {
+        const s = S();
+        const ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
+        const r = calc(brss, cost, ro, s.mutuelle, false);
+        return out(title, brss, cost, r);
     }
 
-    /* ======================================
-       HELPER: OPERATIES
-       ====================================== */
-    function hospitalOp(title, baseCost, supplements) {
-        const s = settings();
-        const ameli = baseCost; // zware ingreep
-        let mut = 5 * FORFAIT_JOUR;
-        let userSupp = supplements;
+    function operation(title, base, supp) {
+        const s = S();
+        const days = 5;
+        const forfait = days * FORFAIT_JOUR;
 
-        if (s.mutuelle > 0) {
-            const limit = baseCost * s.mutuelle - ameli;
-            const suppCovered = Math.min(supplements, Math.max(limit, 0));
-            mut += suppCovered;
-            userSupp -= suppCovered;
-        }
+        const ameli = base;
+        let mut = s.mutuelle > 0 ? forfait : 0;
 
-        return {
-            title,
-            brss: baseCost,
-            cost: baseCost + supplements + 5 * FORFAIT_JOUR,
-            ameli,
-            mut,
-            user: userSupp,
-            note: ""
-        };
+        let limit = base * s.mutuelle - ameli;
+        let covered = Math.min(supp, Math.max(limit, 0));
+        mut += covered;
+
+        return out(title, base, base + supp + forfait,
+            { ameli, mut, user: supp - covered });
     }
 
-    /* ======================================
-       CLICK EVENTS
-       ====================================== */
+    function ssr(title, days) {
+        const s = S();
+        const cost = days * FORFAIT_JOUR;
+        const mut = s.mutuelle > 0 ? cost : 0;
+        const user = s.mutuelle > 0 ? 0 : cost;
+        return out(title, 0, cost, { ameli: 0, mut, user });
+    }
+
+    /* ============================================================
+       RENDER
+       ============================================================ */
+
     document.querySelectorAll(".zk-card").forEach(card => {
         card.addEventListener("click", () => {
-            const key = card.dataset.scenario;
-            const r = scenarios[key]();
+            const sc = card.dataset.scenario;
+            const r = SC[sc]();
 
             totalValue.textContent = "€ " + r.user.toFixed(2);
-            warningsBox.textContent = r.note || "";
+            warningsBox.textContent = r.note;
 
             detailContainer.innerHTML = `
                 <div class="zk-detail-box">
@@ -339,10 +288,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="zk-detail-line"><span>Kostprijs:</span><span>€ ${r.cost.toFixed(2)}</span></div>
                     <div class="zk-detail-line"><span>Ameli:</span><span>€ ${r.ameli.toFixed(2)}</span></div>
                     <div class="zk-detail-line"><span>Mutuelle:</span><span>€ ${r.mut.toFixed(2)}</span></div>
-                    <div class="zk-detail-line"><span>U betaalt:</span><span><strong>€ ${r.user.toFixed(2)}</strong></span></div>
+                    <div class="zk-detail-line"><span><strong>U betaalt:</strong></span><span><strong>€ ${r.user.toFixed(2)}</strong></span></div>
                     <div class="zk-detail-warning">${r.note}</div>
                 </div>
             `;
         });
     });
+
 });
