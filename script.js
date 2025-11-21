@@ -1,245 +1,150 @@
-// DASHBOARD STATE
-function S(){
-    return {
-        profiel: document.getElementById("zk-profiel").value,
-        mut: Number(document.getElementById("zk-mutuelle").value),
-        ald: document.getElementById("zk-ald").checked,
-        traitant: document.getElementById("zk-traitant").checked
-    };
-}
+// CONSTANTS
+const BRSS_GP = 26.50;
+const BRSS_SPEC = 23.00;
+const FORFAIT = 1.00;
+const FORFAIT_JOUR = 20;
+const BRSS_HIP = 2300;
 
-// UPDATE HEADER
-function updateTotal(v, warn=""){
-    document.getElementById("zk-total-value").innerText = "€ "+v.toFixed(2);
-    document.getElementById("zk-total-warnings").innerText = warn;
-}
-
-/* ============= CALC UTILITIES ============= */
-
-function calcConsult(brss, cost, supplement=0){
-    const s = S();
-    const franchise = 1;
-
-    let ro = 0.70;
-    if(!s.traitant && !s.ald) ro = 0.30;
-    if(s.ald) ro = 1.00;
-
-    const amGross = brss * ro;
-    const amNet = Math.max(0, amGross - franchise);
-    const franchEff = Math.min(franchise, amGross);
-
-    const ticket = brss - amGross;
-    let mut = (s.mut>0) ? Math.max(0, ticket) : 0;
-
-    const user = (cost+supplement) - amNet - mut;
-
-    return {
-        brss, cost, supplement,
-        ameli: amNet,
-        mut,
-        user,
-        note:"Franchise €1 is wettelijk verplicht."
-    };
-}
-
-/* ================= SCENARIOS ================ */
-
-const scenarios = {
-
-    instroom: () => ({
-        title:"Instroomproblemen",
-        lines:[
-            ["CPAM verwerking","Traag / maanden"],
-            ["S1 registratie","Risico op tijdelijk geen dekking"],
-            ["URSSAF / PUMa","Administratieve vertraging"]
-        ],
-        note:"Indicatief scenario."
-    }),
-
-    huisarts_s1: () => calcConsult(26.50,26.50),
-
-    huisarts_s2: () => calcConsult(26.50,26.50,15),
-
-    spec_s1: () => calcConsult(30,30),
-
-    spec_s2: () => calcConsult(30,30,40),
-
-    buiten_parcours: () => {
-        const s = S();
-        let r = calcConsult(26.50, 26.50);
-        r.note = "Buiten parcours → Ameli vergoedt maar 30%.";
-        return r;
-    },
-
-    kine: () => {
-        const base = 16.13 * 20;
-        const am = base * 0.60;
-        const fr = 20;
-        return {
-            title:"Kiné 20 sessies",
-            lines:[
-                ["Totale kosten", "€ "+base.toFixed(2)],
-                ["Ameli", "€ "+am.toFixed(2)],
-                ["Mutuelle","€ "+(base-am).toFixed(2)],
-                ["Franchise","€ -20.00"]
-            ],
-            user:20,
-            note:"Franchise nooit gedekt."
-        };
-    },
-
-    med_100: () => ({
-        title:"Medicijnen 100%",
-        lines:[["Ameli","100%"]],
-        user:0,
-        note:"ALD-middelen volledig vergoed (excl. franchise)"
-    }),
-
-    med_65: () => ({
-        title:"Medicijnen 65%",
-        lines:[["Ameli","65%"]],
-        user:3,
-        note:"Indicatief"
-    }),
-
-    med_30: () => ({
-        title:"Medicijnen 30%",
-        lines:[["Ameli","30%"]],
-        user:6,
-        note:"Indicatief"
-    }),
-
-    med_15: () => ({
-        title:"Medicijnen 15%",
-        lines:[["Ameli","15%"]],
-        user:10,
-        note:"Indicatief"
-    }),
-
-    diabetes: () => ({
-        title:"Diabetespakket",
-        lines:[
-            ["Insuline","Gedekt"],
-            ["Strips","Gedekt"],
-            ["Materialen","Gedekt"]
-        ],
-        user:0,
-        note:"ALD 100%"
-    }),
-
-    xray: () => ({title:"Röntgen",lines:[["BRSS","€ 25"],["Kost","€ 40"]],user:5,note:"Indicatief"}),
-    echo: () => ({title:"Echo",lines:[["BRSS","€ 56"],["Kost","€ 80"]],user:15,note:"Indicatief"}),
-    mri: () => ({title:"MRI",lines:[["BRSS","€ 70"],["Kost","€ 300"]],user:80,note:"Indicatief"}),
-    biopsie: () => ({title:"Biopsie",lines:[["BRSS","€ 100"],["Kost","€ 180"]],user:40,note:"Indicatief"}),
-    ctpet: () => ({title:"CT/PET",lines:[["BRSS","€ 160"],["Kost","€ 450"]],user:130,note:"Indicatief"}),
-    onco_diag: () => ({title:"Onco Diagnostiek",lines:[["Scans","Meervoudig"],["Dagopnames","Mogelijk"]],user:0,note:"Sterk variabel"}),
-
-    hosp_pub: () => ({
-        title:"Publiek Ziekenhuis",
-        lines:[
-            ["Operatie","Gedekt 100%"],
-            ["Forfait dag","€ 20"],
-            ["5 dagen","€ 100"]
-        ],
-        user:0,
-        note:"Mutuelle dekt forfait."
-    }),
-
-    hosp_priv: () => ({
-        title:"Privékliniek",
-        lines:[
-            ["Basis","Gedekt"],
-            ["Supplementen","€ 1200"]
-        ],
-        user:200,
-        note:"Supplement afhankelijk van contract"
-    }),
-
-    op_heup: () => ({
-        title:"Heupoperatie",
-        lines:[
-            ["Basis","€ 2300"],
-            ["Forfait","€ 100"]
-        ],
-        user:0,
-        note:"Publiek: geen supplements"
-    }),
-
-    op_hernia: () => ({
-        title:"Hernia-operatie",
-        lines:[
-            ["Basis","€ 1600"],
-            ["Forfait","€ 100"]
-        ],
-        user:0,
-        note:"Indicatief"
-    }),
-
-    op_onco: () => ({
-        title:"Onco-operatie",
-        lines:[
-            ["Meerfasig","Ja"],
-            ["Supplementen","Afhankelijk"]
-        ],
-        user:0,
-        note:"Sterk variabel"
-    }),
-
-    ssr_pub: () => ({
-        title:"SSR Publiek",
-        lines:[
-            ["21 dagen","€ 420"],
-            ["Mutuelle","Dekt alles"]
-        ],
-        user:0,
-        note:"Forfait gedekt"
-    }),
-
-    ssr_priv: () => ({
-        title:"SSR Privé",
-        lines:[
-            ["30 dagen","€ 600"],
-            ["Mutuelle","Dekt alles"]
-        ],
-        user:0
-    })
+let state = {
+    profile: "worker",
+    mutuelle: 2,
+    ald: false,
+    traitant: true,
+    hospitalType: "pub",
+    specCost: 50
 };
 
-/* =============== MODAL HANDLING ================== */
+function toggleDetails(id){
+    document.getElementById(id).classList.toggle("open");
+}
 
-const modal = document.getElementById("zk-modal");
-const modalBody = document.getElementById("zk-modal-body");
-document.getElementById("zk-close").onclick = ()=> modal.style.display="none";
+function setHospital(type){
+    state.hospitalType = type;
 
-document.querySelectorAll(".zk-card").forEach(c=>{
-    c.onclick = ()=>{
-        const key = c.dataset.scenario;
-        const d = scenarios[key]();
+    document.getElementById("btn-hosp-pub").style.background =
+        type==="pub" ? "#800000" : "#fff";
+    document.getElementById("btn-hosp-pub").style.color =
+        type==="pub" ? "#fff" : "#333";
 
-        let h = `<div class='zk-title'>${d.title}</div>`;
+    document.getElementById("btn-hosp-priv").style.background =
+        type==="priv" ? "#800000" : "#fff";
+    document.getElementById("btn-hosp-priv").style.color =
+        type==="priv" ? "#fff" : "#333";
 
-        if(d.lines){
-            d.lines.forEach(l=>{
-                h += `<div class='zk-line'><span>${l[0]}</span><span>${l[1]}</span></div>`;
-            });
-        }
+    updateSystem();
+}
 
-        if(typeof d.ameli!="undefined"){
-            h += `<div class='zk-line'><span>Ameli</span><span>€ ${d.ameli.toFixed(2)}</span></div>`;
-        }
-        if(typeof d.mut!="undefined"){
-            h += `<div class='zk-line'><span>Mutuelle</span><span>€ ${d.mut.toFixed(2)}</span></div>`;
-        }
+function updateSystem(){
+    state.profile = document.getElementById("profile-status").value;
+    state.mutuelle = Number(document.getElementById("profile-mutuelle").value);
+    state.ald = document.getElementById("profile-ald").checked;
+    state.traitant = document.getElementById("setting-traitant").checked;
+    state.specCost = Number(document.getElementById("input-f2-cost").value);
 
-        h += `<div class='zk-line'><strong>U betaalt</strong><strong>€ ${d.user.toFixed(2)}</strong></div>`;
+    updateEntryText();
+    calcSpecialist();
+    calcPhysio();
+    calcHospital();
+    calcRehab();
+}
 
-        if(d.note){
-            h += `<div class='zk-note'>${d.note}</div>`;
-        }
+function updateEntryText(){
+    const t = document.getElementById("txt-entry-title");
+    const d = document.getElementById("txt-entry-desc");
 
-        modalBody.innerHTML = h;
-        modal.style.display = "flex";
+    if(state.profile==="worker"){
+        t.innerText="Profiel: Werkende / ZZP";
+        d.innerText="Je valt onder PUMa via loon of URSSAF-bijdragen.";
+    } 
+    else if(state.profile==="pensioner"){
+        t.innerText="Profiel: Gepensioneerde (S1)";
+        d.innerText="Frankrijk betaalt je zorg, NL verrekent via CAK.";
+    } 
+    else {
+        t.innerText="Profiel: Inwoner";
+        d.innerText="PUMa op basis van verblijf. Let op CSM bij vermogen.";
+    }
+}
 
-        updateTotal(d.user, d.note||"");
-    };
-});
+function calcSpecialist(){
+    const fee = state.specCost;
+    const brss = (fee===30)?BRSS_GP:BRSS_SPEC;
+
+    let ro = 0.70;
+    if(state.ald) ro = 1.00;
+    if(!state.traitant && !state.ald) ro = 0.30;
+
+    const amGross = brss * ro;
+    const amNet = Math.max(0, amGross - FORFAIT);
+
+    const ticket = brss - amGross;
+    const mut = state.mutuelle>0 ? Math.max(ticket,0) : 0;
+
+    const user = fee - amNet - mut;
+
+    document.getElementById("res-f2-ameli").innerText="€ "+amNet.toFixed(2);
+    document.getElementById("res-f2-mut").innerText="€ "+mut.toFixed(2);
+    document.getElementById("res-f2-user").innerText="€ "+user.toFixed(2);
+
+    let h = "";
+    h+=row("BRSS","€ "+brss.toFixed(2));
+    h+=row("RO %",(ro*100)+"%");
+    h+=row("Ameli bruto","€ "+amGross.toFixed(2));
+    h+=row("Ticket modérateur","€ "+ticket.toFixed(2));
+
+    document.getElementById("det-f2").innerHTML=h;
+}
+
+function calcPhysio(){
+    const total = 20 * 16.13;
+    const franchise = 20;
+    const amGross = total * (state.ald?1:0.60);
+    const amNet = Math.max(0, amGross - franchise);
+    const mut = total - amGross;
+
+    const user = total - amNet - mut;
+
+    document.getElementById("res-f3-ameli").innerText="€ "+amNet.toFixed(2);
+    document.getElementById("res-f3-mut").innerText="€ "+mut.toFixed(2);
+    document.getElementById("res-f3-user").innerText="€ "+user.toFixed(2);
+}
+
+function calcHospital(){
+    const base = BRSS_HIP;
+    const supplements = state.hospitalType==="priv" ? 1200 : 0;
+    const forfait = 5 * FORFAIT_JOUR;
+
+    const am = base;
+
+    let mut = 0;
+    if(state.mutuelle>0){
+        mut += forfait;
+        mut += supplements;
+    }
+
+    const user = base + supplements + forfait - am - mut;
+
+    document.getElementById("res-f4-ameli").innerText="€ "+am.toFixed(2);
+    document.getElementById("res-f4-mut").innerText="€ "+mut.toFixed(2);
+    document.getElementById("res-f4-user").innerText="€ "+user.toFixed(2);
+
+    let h="";
+    h+=row("Basis","€ "+base);
+    h+=row("Supp","€ "+supplements);
+    h+=row("Forfait","€ "+forfait);
+    document.getElementById("det-f4").innerHTML=h;
+}
+
+function calcRehab(){
+    if(state.mutuelle>0){
+        document.getElementById("res-f5-text").innerHTML=
+            "<span style='color:green'>Volledig vergoed</span>";
+    } else {
+        document.getElementById("res-f5-text").innerHTML=
+            "<span style='color:red'>€ 600 zelf betalen</span>";
+    }
+}
+
+function row(a,b){return `<div class="fz-detail-row"><span>${a}</span><span>${b}</span></div>`;}
+
+updateSystem();
