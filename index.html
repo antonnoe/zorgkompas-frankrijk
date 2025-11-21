@@ -1,319 +1,210 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<title>Zorgkompas Frankrijk</title>
-
-<link rel="stylesheet" href="style.css" />
-<script defer src="script.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zorgkompas Frankrijk — Dashboard</title>
 </head>
 
 <body>
 
-<header class="zk-header">
-    <h1>Zorgkompas Frankrijk</h1>
-    <h2 class="zk-subtitle">Educatieve simulatie van het Franse zorg- en verzekeringsstelsel</h2>
+<!-- ============================= -->
+<!--   FLOATING DASHBOARD (TOP)   -->
+<!-- ============================= -->
+<div id="zk-dashboard">
 
-    <p class="zk-disclaimer-short">
-        Dit is een indicatieve rekentool. De getoonde bedragen zijn educatief en niet bindend.
-    </p>
-</header>
-
-
-<!-- ============================ -->
-<!--       STICKY DASHBOARD       -->
-<!-- ============================ -->
-<section class="zk-dashboard">
-
-    <div class="zk-dash-block">
-        <label>Uw Profiel
-            <span class="zk-info" data-tip="Beschrijving URSSAF / S1 / PUMa / CSM"></span>
-        </label>
-        <select id="profile-status">
+    <div class="zk-dash-group">
+        <label for="zk-profiel">Uw Profiel</label>
+        <select id="zk-profiel">
             <option value="worker">Werkende / Ondernemer (URSSAF)</option>
             <option value="pensioner">Gepensioneerde (S1 / CAK)</option>
             <option value="resident">Inwoner (PUMa / CSM)</option>
         </select>
     </div>
 
-    <div class="zk-dash-block">
-        <label>Mutuelle
-            <span class="zk-info" data-tip="Mutuelle vergoedt een percentage van het BRSS-tarief, niet van de factuur."></span>
-        </label>
-        <select id="profile-mutuelle">
+    <div class="zk-dash-group">
+        <label for="zk-mutuelle">Mutuelle</label>
+        <select id="zk-mutuelle">
             <option value="0">Geen mutuelle</option>
-            <option value="1.0">100%</option>
+            <option value="1">100%</option>
             <option value="1.5">150%</option>
-            <option value="2.0" selected>200%</option>
-            <option value="3.0">300%</option>
-            <option value="4.0">400%</option>
+            <option value="2" selected>200%</option>
+            <option value="3">300%</option>
+            <option value="4">400%</option>
         </select>
     </div>
 
-    <div class="zk-dash-block checkbox">
-        <label>
-            <input type="checkbox" id="profile-ald" />
-            ALD (chronische ziekte)
-        </label>
-        <span class="zk-info" data-tip="ALD = 100% BRSS voor alle zorg die onder de aandoening valt, maar GEEN supplementen."></span>
+    <div class="zk-dash-group checkbox">
+        <label><input type="checkbox" id="zk-ald"> ALD (100% BRSS voor ALD-zorg)</label>
     </div>
 
-    <div class="zk-dash-block checkbox">
-        <label>
-            <input type="checkbox" id="profile-traitant" checked />
-            Mijn huisarts heeft mij geregistreerd
-        </label>
-        <span class="zk-info" data-tip="Zonder médecin traitant: Ameli vergoedt slechts 30% i.p.v. 70% (buiten parcours)."></span>
+    <div class="zk-dash-group checkbox">
+        <label><input type="checkbox" id="zk-traitant" checked> Médecin Traitant geregistreerd</label>
     </div>
 
-    <div class="zk-dash-total">
-        <div class="zk-total-label">U betaalt (indicatie):</div>
-        <div id="zk-total-cost" class="zk-total-value">€ 0,00</div>
-        <div id="zk-total-alerts" class="zk-total-alerts"></div>
-    </div>
-</section>
-
-
-
-<!-- ============================ -->
-<!--         FASE 1               -->
-<!-- ============================ -->
-<section class="zk-section">
-
-    <h3 class="zk-section-title">Fase 1 — Instroom & Administratie</h3>
-
-    <div class="zk-section-text">
-        Uw situatie bepaalt hoe Ameli uw zorg vergoedt. Voor nieuwkomers kunnen URSSAF, S1, PUMa en CPAM vertraging veroorzaken.
+    <div id="zk-total-box">
+        <div id="zk-total-label">U betaalt (indicatie):</div>
+        <div id="zk-total-value">€ 0,00</div>
+        <div id="zk-total-warnings"></div>
     </div>
 
-    <div class="zk-card">
-        <h4>Scenario: Starter zonder Carte Vitale</h4>
-        <p>Registratie bij CPAM vertraagd. Mogelijk maanden wachten.</p>
-    </div>
-
-    <div class="zk-card">
-        <h4>Scenario: S1 / CAK vertraagde verwerking</h4>
-        <p>S1 wordt pas laat ingelezen in Ameli → tijdelijk risico op geen dekking.</p>
-    </div>
-</section>
+</div>
 
 
 
-<!-- ============================ -->
-<!--         FASE 2               -->
-<!-- ============================ -->
-<section class="zk-section">
+<!-- ========================================= -->
+<!--          GRID MET ZORGSCENARIO'S         -->
+<!-- ========================================= -->
 
-    <h3 class="zk-section-title">Fase 2 — Eerstelijnszorg</h3>
+<div id="zk-grid">
 
-    <div class="zk-subblock">
-        <h4>Huisarts (Médecin Généraliste)</h4>
-        <p class="zk-subnote">BRSS huisarts: €26,50. Secteur 2 kan supplementen rekenen.</p>
+    <!-- ===== Column 1: Consulten ===== -->
+    <div class="zk-column">
+        <h2>Consult & Specialist</h2>
 
-        <div class="zk-card-list">
+        <div class="zk-card" data-scenario="gp_s1">
+            <h3>Huisarts S1</h3>
+            <p>Consult zonder supplement</p>
+        </div>
 
-            <div class="zk-card scenario" data-scenario="gp_s1">
-                <h5>Secteur 1 (standaard)</h5>
-                <p>Consult volgens BRSS. Geen supplementen.</p>
-            </div>
+        <div class="zk-card" data-scenario="gp_s2">
+            <h3>Huisarts S2</h3>
+            <p>Met supplementen</p>
+        </div>
 
-            <div class="zk-card scenario" data-scenario="gp_s2">
-                <h5>Secteur 2 (met supplement)</h5>
-                <p>Typisch €10–€20 extra.</p>
-            </div>
+        <div class="zk-card" data-scenario="spec_s1">
+            <h3>Specialist S1</h3>
+            <p>Cardio, longarts, etc.</p>
+        </div>
 
+        <div class="zk-card" data-scenario="spec_s2">
+            <h3>Specialist S2</h3>
+            <p>Hoog supplement</p>
+        </div>
+
+        <div class="zk-card" data-scenario="spec_out">
+            <h3>Buiten Parcours</h3>
+            <p>Zonder doorverwijzing</p>
         </div>
     </div>
 
 
-    <div class="zk-subblock">
-        <h4>Specialisten (Tweede Lijn)</h4>
-        <p class="zk-subnote">Binnen parcours 70% BRSS — buiten parcours slechts 30%.</p>
 
-        <div class="zk-card-list">
+    <!-- ===== Column 2: Paramedisch ===== -->
+    <div class="zk-column">
+        <h2>Paramedische Zorg</h2>
 
-            <div class="zk-card scenario" data-scenario="spec_s1">
-                <h5>Specialist S1</h5>
-                <p>Cardioloog, longarts, dermatoloog… zonder supplementen.</p>
-            </div>
+        <div class="zk-card" data-scenario="kine_20">
+            <h3>Kiné</h3>
+            <p>20 sessies</p>
+        </div>
 
-            <div class="zk-card scenario" data-scenario="spec_s2">
-                <h5>Specialist S2</h5>
-                <p>Supplementen mogelijk. Kostprijs €50–€120.</p>
-            </div>
+        <div class="zk-card" data-scenario="med_ald">
+            <h3>Medicijnen 100% (ALD)</h3>
+        </div>
 
-            <div class="zk-card scenario" data-scenario="spec_out">
-                <h5>Zonder huisarts (buiten parcours)</h5>
-                <p>Ameli vergoedt slechts 30% BRSS.</p>
-            </div>
+        <div class="zk-card" data-scenario="med_65">
+            <h3>Medicijnen 65%</h3>
+        </div>
 
+        <div class="zk-card" data-scenario="med_30">
+            <h3>Medicijnen 30%</h3>
+        </div>
+
+        <div class="zk-card" data-scenario="med_15">
+            <h3>Medicijnen 15%</h3>
+        </div>
+
+        <div class="zk-card" data-scenario="med_diab">
+            <h3>Diabetespakket</h3>
+            <p>Insuline, materialen</p>
         </div>
     </div>
 
-</section>
 
 
+    <!-- ===== Column 3: Diagnostiek ===== -->
+    <div class="zk-column">
+        <h2>Diagnostiek</h2>
 
-<!-- ============================ -->
-<!--         FASE 3               -->
-<!-- ============================ -->
-<section class="zk-section">
+        <div class="zk-card" data-scenario="diag_xray">
+            <h3>Röntgen</h3>
+        </div>
 
-    <h3 class="zk-section-title">Fase 3 — Paramedische Zorg</h3>
+        <div class="zk-card" data-scenario="diag_echo">
+            <h3>Echo</h3>
+        </div>
 
-    <div class="zk-subblock">
-        <h4>Fysiotherapie (Kiné)</h4>
-        <div class="zk-card scenario" data-scenario="kine_20">
-            <h5>20 sessies</h5>
-            <p>BRSS €16,13 per sessie. Franchise €1 per sessie (nooit gedekt).</p>
+        <div class="zk-card" data-scenario="diag_mri">
+            <h3>MRI</h3>
+        </div>
+
+        <div class="zk-card" data-scenario="diag_biopsy">
+            <h3>Biopsie</h3>
+        </div>
+
+        <div class="zk-card" data-scenario="diag_ctpet">
+            <h3>CT / PET</h3>
+        </div>
+
+        <div class="zk-card" data-scenario="diag_onco">
+            <h3>Oncologie Diagnostiek</h3>
         </div>
     </div>
 
-    <div class="zk-subblock">
-        <h4>Medicijnen</h4>
-        <p>Vergoeding per categorie. Let op: franchise nooit gedekt.</p>
 
-        <div class="zk-card-list">
 
-            <div class="zk-card scenario" data-scenario="med_ald">
-                <h5>100% (ALD)</h5>
-            </div>
+    <!-- ===== Column 4: Ziekenhuis ===== -->
+    <div class="zk-column">
+        <h2>Ziekenhuis & Operaties</h2>
 
-            <div class="zk-card scenario" data-scenario="med_65">
-                <h5>65% vergoede middelen</h5>
-            </div>
+        <div class="zk-card" data-scenario="hosp_public">
+            <h3>Publiek Ziekenhuis</h3>
+        </div>
 
-            <div class="zk-card scenario" data-scenario="med_30">
-                <h5>30% middelen</h5>
-            </div>
+        <div class="zk-card" data-scenario="hosp_private">
+            <h3>Privékliniek</h3>
+        </div>
 
-            <div class="zk-card scenario" data-scenario="med_15">
-                <h5>15% middelen</h5>
-            </div>
+        <div class="zk-card" data-scenario="hosp_hip">
+            <h3>Heupoperatie</h3>
+        </div>
 
-            <div class="zk-card scenario" data-scenario="med_diab">
-                <h5>Chronische diabetes medicatie</h5>
-                <p>Insuline, metformine, teststrips, materiaal.</p>
-            </div>
+        <div class="zk-card" data-scenario="hosp_hernia">
+            <h3>Hernia-operatie</h3>
+        </div>
+
+        <div class="zk-card" data-scenario="hosp_onco_op">
+            <h3>Onco-operatie</h3>
         </div>
     </div>
 
-</section>
 
 
+    <!-- ===== Column 5: Revalidatie ===== -->
+    <div class="zk-column">
+        <h2>Revalidatie (SSR)</h2>
 
-<!-- ============================ -->
-<!--         FASE 4               -->
-<!-- ============================ -->
-<section class="zk-section">
-
-    <h3 class="zk-section-title">Fase 4 — Diagnostiek & Specialistische Zorg</h3>
-
-    <div class="zk-card-list">
-
-        <div class="zk-card scenario" data-scenario="diag_xray">
-            <h5>Röntgen (indicatie)</h5>
-            <p>BRSS ~€25. Reëel €30–€60.</p>
+        <div class="zk-card" data-scenario="ssr_21">
+            <h3>SSR — 21 dagen (publiek)</h3>
         </div>
 
-        <div class="zk-card scenario" data-scenario="diag_echo">
-            <h5>Echo (indicatie)</h5>
-            <p>BRSS €56–€75.</p>
-        </div>
-
-        <div class="zk-card scenario" data-scenario="diag_mri">
-            <h5>MRI</h5>
-            <p>Kost €250–€600. Supplementen mogelijk.</p>
-        </div>
-
-        <div class="zk-card scenario" data-scenario="diag_onco">
-            <h5>Oncologisch traject</h5>
-            <p>Consulten, scans, biopsie, dagopnames.</p>
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- ============================ -->
-<!--         FASE 5               -->
-<!-- ============================ -->
-<section class="zk-section">
-
-    <h3 class="zk-section-title">Fase 5 — Ziekenhuis & Operatie</h3>
-
-    <div class="zk-card-list">
-
-        <div class="zk-card scenario" data-scenario="hosp_public">
-            <h5>Publiek ziekenhuis</h5>
-        </div>
-
-        <div class="zk-card scenario" data-scenario="hosp_private">
-            <h5>Privékliniek (S2)</h5>
-        </div>
-
-        <div class="zk-card scenario" data-scenario="hosp_hip">
-            <h5>Heupoperatie</h5>
-        </div>
-
-        <div class="zk-card scenario" data-scenario="hosp_hernia">
-            <h5>Hernia-operatie</h5>
-        </div>
-
-        <div class="zk-card scenario" data-scenario="hosp_onco_op">
-            <h5>Oncologische operatie</h5>
-        </div>
-
-    </div>
-</section>
-
-
-
-<!-- ============================ -->
-<!--         FASE 6               -->
-<!-- ============================ -->
-<section class="zk-section">
-    <h3 class="zk-section-title">Fase 6 — Revalidatie (SSR)</h3>
-
-    <div class="zk-card-list">
-        <div class="zk-card scenario" data-scenario="ssr_21">
-            <h5>21 dagen (publiek)</h5>
-        </div>
-
-        <div class="zk-card scenario" data-scenario="ssr_30_private">
-            <h5>30 dagen (privé)</h5>
+        <div class="zk-card" data-scenario="ssr_30">
+            <h3>SSR — 30 dagen (privé)</h3>
         </div>
     </div>
-</section>
+
+</div>
 
 
 
-<!-- ============================ -->
-<!--         DISCLAIMER           -->
-<!-- ============================ -->
-<footer class="zk-footer">
-    <h4>Disclaimer</h4>
-    <p>
-        Het Zorgkompas Frankrijk is een educatieve simulator.  
-        Alle bedragen zijn indicatief.  
-        Raadpleeg Ameli, CAK, URSSAF, CPAM of uw zorgverzekeraar voor officiële informatie.
-    </p>
+<!-- ========================================= -->
+<!--      DETAILPANELS (1 per scenario)       -->
+<!-- ========================================= -->
 
-    <h4>Bronnen</h4>
-    <ul>
-        <li>Ameli.fr</li>
-        <li>Legifrance</li>
-        <li>CAK</li>
-        <li>URSSAF</li>
-        <li>CLEISS</li>
-        <li>100% Santé</li>
-    </ul>
-</footer>
-
+<div id="zk-detail-container">
+    <!-- Deze div wordt door JS gevuld -->
+</div>
 
 </body>
 </html>
