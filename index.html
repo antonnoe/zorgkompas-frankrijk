@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Zorgkompas Frankrijk - Educatieve Simulator</title>
+    <title>Zorgkompas Frankrijk</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,17 +20,13 @@
 </header>
 
 <div id="zk-dashboard">
+    
     <div class="zk-dash-block">
-        <label for="zk-status">Status verzekerde</label>
-        <select id="zk-status">
-            <option value="worker">Werkende (URSSAF/CPAM)</option>
-            <option value="pensioner">Gepensioneerde (S1/CAK)</option>
-            <option value="resident">Inactief / PUMa</option>
-        </select>
-    </div>
-
-    <div class="zk-dash-block">
-        <label for="zk-mutuelle">Mutuelle (Aanvullend)</label>
+        <label for="zk-mutuelle">
+            <span class="zk-tooltip-wrapper" data-tip="Aanvullende verzekering. Dekt het gat tussen Sécu en werkelijke kosten (tot een limiet).">
+                Mutuelle <img src="assets/info.svg" class="zk-info-icon" alt="[i]">
+            </span>
+        </label>
         <select id="zk-mutuelle">
             <option value="0">Geen mutuelle (Alleen Sécu)</option>
             <option value="1">100% (Basis)</option>
@@ -43,9 +39,27 @@
     <div class="zk-dash-block wide">
         <label>Situatie & Opties</label>
         <div class="zk-opt-row">
-            <label title="Affection Longue Durée (Chronische ziekte)"><input type="checkbox" id="zk-opt-ald" /> ALD Status</label>
-            <label title="Eigen huisarts verklaard"><input type="checkbox" id="zk-opt-traitant" checked /> Médecin Traitant</label>
-            <label title="Behandeling in privékliniek"><input type="checkbox" id="zk-opt-private" /> Privé kliniek</label>
+            
+            <label>
+                <input type="checkbox" id="zk-opt-ald" /> 
+                <span class="zk-tooltip-wrapper" data-tip="Affection Longue Durée: Chronische ziekte (kanker, diabetes). Geeft 100% basisvergoeding.">
+                    ALD Status <img src="assets/info.svg" class="zk-info-icon" alt="[i]">
+                </span>
+            </label>
+
+            <label>
+                <input type="checkbox" id="zk-opt-traitant" checked /> 
+                <span class="zk-tooltip-wrapper" data-tip="Médecin Traitant: Uw vaste geregistreerde huisarts. Zonder verwijzing betaalt u meer.">
+                    Huisarts <img src="assets/info.svg" class="zk-info-icon" alt="[i]">
+                </span>
+            </label>
+
+            <label>
+                <input type="checkbox" id="zk-opt-private" /> 
+                <span class="zk-tooltip-wrapper" data-tip="Klinieken zonder contract (Non-conventionné). Vaak hoge ereloonsupplementen.">
+                    Privé <img src="assets/info.svg" class="zk-info-icon" alt="[i]">
+                </span>
+            </label>
         </div>
     </div>
 
@@ -68,7 +82,7 @@
 </div>
 
 <footer id="zk-footer">
-    <p><strong>Disclaimer:</strong> Dit is een educatieve tool. Bedragen zijn schattingen o.b.v. tarieven 2025 en kunnen afwijken van uw persoonlijke situatie.</p>
+    <p><strong>Disclaimer:</strong> Dit is een educatieve tool. Bedragen zijn indicatief en kunnen afwijken van uw persoonlijke situatie.</p>
 </footer>
 
 <script type="module" src="script.js"></script>
