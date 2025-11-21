@@ -1,244 +1,123 @@
-/* ================================================================
-   NLFR Zorgkompas – Professionele Dashboard CSS (Huisstijl #800000)
-   ================================================================ */
+/* RESET */
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",sans-serif}
 
-:root {
-    --main: #800000;
-    --main-light: #f7eaea;
-    --main-dark: #5b0000;
-
-    --bg: #f5f5f5;
-    --white: #ffffff;
-
-    --text: #222;
-    --soft: #555;
-    --border: #d4d4d4;
-
-    --shadow: 0 2px 8px rgba(0,0,0,0.08);
-    --shadow-strong: 0 3px 12px rgba(128,0,0,0.20);
+/* DASHBOARD */
+#zk-dashboard{
+    background:#2c3e50;
+    color:#fff;
+    padding:15px;
+    display:flex;
+    gap:20px;
+    align-items:center;
+    position:sticky;
+    top:0;
+    z-index:10;
+    border-bottom:4px solid #800000;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
+#zk-dashboard select{
+    padding:6px 8px;
+    border-radius:4px;
+    border:none;
 }
 
-
-
-/* ============================= */
-/* FLOATING DASHBOARD */
-/* ============================= */
-
-#zk-dashboard {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: #2c3e50;
-    color: #fff;
-
-    padding: 14px 18px;
-    border-bottom: 4px solid var(--main);
-
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: center;
+.zk-check{
+    display:flex;
+    align-items:center;
+    gap:6px;
 }
 
-.zk-dash-group {
-    display: flex;
-    flex-direction: column;
-    font-size: 13px;
+#zk-total-box{
+    margin-left:auto;
+    background:#fff;
+    padding:10px 18px;
+    border-radius:6px;
+    color:#222;
+    border-left:4px solid #800000;
 }
 
-.zk-dash-group select,
-.zk-dash-group input[type="checkbox"] {
-    padding: 6px;
-    border-radius: 4px;
-    border: none;
-    outline: none;
+#zk-total-label{font-size:13px;color:#555}
+#zk-total-value{font-size:24px;color:#800000;font-weight:bold}
+
+/* SECTIONS */
+.zk-section{
+    max-width:900px;
+    margin:30px auto;
+    padding:0 15px;
 }
 
-.zk-dash-group.checkbox {
-    flex-direction: row;
-    gap: 6px;
+.zk-h2{
+    font-size:20px;
+    font-weight:700;
+    color:#800000;
+    margin-bottom:12px;
 }
 
-
-
-/* ============================= */
-/* U BETAALT BOX */
-/* ============================= */
-
-#zk-total-box {
-    margin-left: auto;
-    background: var(--white);
-    color: var(--text);
-
-    padding: 10px 18px;
-    border-radius: 6px;
-    box-shadow: var(--shadow);
-    border-left: 4px solid var(--main);
-    text-align: center;
+/* CARDS */
+.zk-card{
+    background:#fff;
+    border:1px solid #ddd;
+    padding:16px;
+    border-radius:8px;
+    margin-bottom:12px;
+    cursor:pointer;
+    transition:.2s;
 }
 
-#zk-total-label {
-    font-size: 13px;
-    color: var(--soft);
+.zk-card:hover{
+    border-color:#800000;
+    box-shadow:0 2px 8px rgba(0,0,0,0.15);
 }
 
-#zk-total-value {
-    margin-top: 4px;
-    font-size: 24px;
-    color: var(--main);
-    font-weight: bold;
+.zk-card h3{
+    color:#800000;
+    margin-bottom:4px;
+    font-size:17px;
 }
 
-#zk-total-warnings {
-    margin-top: 6px;
-    font-size: 11px;
-    color: red;
+.zk-card p{
+    font-size:13px;
+    color:#555;
 }
 
-
-
-/* ============================= */
-/* GRID LAYOUT */
-/* ============================= */
-
-#zk-grid {
-    max-width: 1300px;
-    margin: 30px auto;
-    padding: 0 20px;
-
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 22px;
+/* MODAL */
+#zk-modal{
+    display:none;
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    background:rgba(0,0,0,0.55);
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
 }
 
-.zk-column h2 {
-    font-size: 18px;
-    color: var(--main);
-    margin-bottom: 10px;
+#zk-modal-content{
+    background:#fff;
+    padding:25px;
+    width:90%;
+    max-width:600px;
+    border-radius:10px;
+    position:relative;
 }
 
-
-
-/* ============================= */
-/* CARDS (scenario buttons) */
-/* ============================= */
-
-.zk-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    padding: 14px 16px;
-    border-radius: 8px;
-
-    box-shadow: var(--shadow);
-    transition: 0.2s ease;
-    cursor: pointer;
+#zk-close{
+    position:absolute;
+    top:10px;
+    right:15px;
+    cursor:pointer;
+    font-size:22px;
 }
 
-.zk-card:hover {
-    border-color: var(--main);
-    box-shadow: var(--shadow-strong);
+.zk-line{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+    border-bottom:1px solid #eee;
+    font-size:14px;
 }
 
-.zk-card h3 {
-    margin: 0;
-    font-size: 16px;
-    color: var(--main);
-    font-weight: 600;
-}
-
-.zk-card p {
-    margin: 6px 0 0;
-    color: var(--soft);
-    font-size: 13px;
-}
-
-
-
-/* ============================= */
-/* DETAIL PANEL */
-/* ============================= */
-
-#zk-detail-container {
-    max-width: 900px;
-    margin: 30px auto 60px auto;
-    padding: 0 20px;
-}
-
-.zk-detail-box {
-    background: var(--white);
-    border-left: 6px solid var(--main);
-    border-radius: 8px;
-    padding: 20px;
-
-    box-shadow: var(--shadow);
-}
-
-.zk-detail-title {
-    font-size: 22px;
-    color: var(--main);
-    font-weight: bold;
-    margin-bottom: 16px;
-}
-
-.zk-detail-line {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed var(--border);
-    padding: 8px 0;
-    font-size: 14px;
-}
-
-.zk-detail-warning {
-    margin-top: 15px;
-    color: red;
-    font-size: 14px;
-}
-
-.zk-detail-good {
-    margin-top: 15px;
-    color: green;
-    font-size: 14px;
-}
-
-
-
-/* ============================= */
-/* RESPONSIVE DESIGN */
-/* ============================= */
-
-@media (max-width: 1200px) {
-    #zk-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 900px) {
-    #zk-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 600px) {
-    #zk-dashboard {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    #zk-total-box {
-        margin-left: 0;
-        width: 100%;
-    }
-
-    #zk-grid {
-        grid-template-columns: 1fr;
-    }
+.zk-note{
+    margin-top:12px;
+    font-size:13px;
+    color:#800000;
 }
