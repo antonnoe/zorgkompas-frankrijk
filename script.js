@@ -1,5 +1,5 @@
 /* ============================================================
-   ZORGKOMPAS CONTROLLER
+   ZORGKOMPAS CONTROLLER - FINAL V3 (Met Label Fix)
    ============================================================ */
 
 import { ZK_SCENARIOS } from "./scenarios.js";
@@ -96,9 +96,11 @@ function renderOutput(result) {
     const container = document.getElementById("zk-output");
     const s = result.scenario;
 
+    // --- INTRO CARD (Aangepast met Label) ---
     let html = `
         <div class="zk-intro-card">
-            <div style="background:#f3f4f6; padding:8px 12px; border-radius:6px; font-size:13px; font-weight:600; color:#555; margin-bottom:15px; border-left:4px solid #999;">
+            <div style="background:#f3f4f6; padding:10px 15px; border-radius:6px; font-size:13px; color:#333; margin-bottom:15px; border-left:4px solid #999;">
+                <strong style="display:block; margin-bottom:4px; color:#000;">Nauwkeurigheid kostenraming 2024-2025:</strong>
                 ${s.accuracy_text}
             </div>
 
@@ -112,6 +114,7 @@ function renderOutput(result) {
         </div>
     `;
 
+    // --- STAPPEN ---
     result.steps.forEach((step, index) => {
         let icon = "";
         if (step.notes.some(n => n.includes("100%"))) {
