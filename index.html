@@ -3,38 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zorgkompas Frankrijk – Simulator</title>
+<title>Zorgkompas Frankrijk</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- ========================================================= -->
-<!-- HEADER -->
-<!-- ========================================================= -->
 <header id="zk-header">
     <h1>Zorgkompas Frankrijk</h1>
     <h2>Educatieve simulator voor het Franse zorgstelsel</h2>
 </header>
 
-
-<!-- ========================================================= -->
-<!-- FLOATING DASHBOARD (STATUS VERZEKERDE) -->
-<!-- ========================================================= -->
 <div id="zk-dashboard">
 
-    <!-- STATUS VERZEKERDE -->
-    <div class="zk-dash-group">
+    <div class="zk-dash-block">
         <label>Status verzekerde</label>
         <select id="profile-status">
             <option value="worker">A. Werkende / Ondernemer (URSSAF)</option>
-            <option value="pensioner">B. Gepensioneerd (S1 / Verdragsgerechtigd)</option>
+            <option value="pensioner">B. Gepensioneerd (S1)</option>
             <option value="resident">C. Inwoner (PUMa / CSM)</option>
         </select>
     </div>
 
-    <!-- MUTUELLE -->
-    <div class="zk-dash-group">
+    <div class="zk-dash-block">
         <label>Mutuelle</label>
         <select id="profile-mutuelle">
             <option value="0">Geen mutuelle</option>
@@ -45,74 +36,36 @@
         </select>
     </div>
 
-    <!-- ALD -->
-    <div class="zk-dash-group checkbox">
-        <input type="checkbox" id="profile-ald">
-        <label for="profile-ald">ALD (100% BRSS)</label>
+    <div class="zk-dash-block small">
+        <label>Opties</label>
+        <div class="zk-opt-row">
+            <label><input type="checkbox" id="profile-ald"> ALD</label>
+            <label><input type="checkbox" id="profile-traitant" checked> Traitant</label>
+            <label><input type="checkbox" id="profile-private"> Privé</label>
+        </div>
     </div>
 
-    <!-- MÉDECIN TRAITANT -->
-    <div class="zk-dash-group checkbox">
-        <input type="checkbox" id="profile-traitant" checked>
-        <label for="profile-traitant">Médecin traitant</label>
-    </div>
-
-    <!-- PRIVÉ VS PUBLIEK -->
-    <div class="zk-dash-group checkbox">
-        <input type="checkbox" id="profile-private">
-        <label for="profile-private">Privé zorgpad</label>
-    </div>
-
-
-    <!-- TOTAAL -->
-    <div id="zk-total-box">
-        <div id="zk-total-label">U betaalt (indicatie):</div>
-        <div id="zk-total-value">€ 0,00</div>
-        <div id="zk-total-warnings"></div>
+    <div id="zk-total">
+        <div class="zk-total-label">U betaalt</div>
+        <div class="zk-total-value" id="zk-total-value">€ 0,00</div>
+        <div class="zk-total-note" id="zk-total-warnings"></div>
     </div>
 
 </div>
 
-
-
-<!-- ========================================================= -->
-<!-- SCENARIO SELECTIE -->
-<!-- ========================================================= -->
-<section id="zk-scenario-section">
-    <h2>Kies uw zorgvraag / ziektebeeld</h2>
-
+<section id="zk-scenario-panel">
+    <h3>Zorgvraag / ziektebeeld</h3>
     <select id="zk-scenario-select">
         <option value="">-- Kies een scenario --</option>
-        <!-- Wordt dynamisch gevuld door script.js -->
     </select>
 </section>
 
+<section id="zk-detail-container"></section>
 
-
-<!-- ========================================================= -->
-<!-- DETAIL RENDERCONTAINER -->
-<!-- ========================================================= -->
-<section id="zk-detail-container">
-    <!-- Scenario-resultaat komt hier -->
-</section>
-
-
-
-<!-- ========================================================= -->
-<!-- DISCLAIMER -->
-<!-- ========================================================= -->
 <footer id="zk-footer">
-    <p><strong>Disclaimer:</strong> Het Zorgkompas Frankrijk is een educatieve simulator. 
-    Alle bedragen zijn indicatief en gebaseerd op BRSS-tarieven, voorbeeldbedragen en 
-    generieke zorgpaden. Raadpleeg Ameli.fr, uw CPAM, het CAK, URSSAF of uw zorgverzekeraar
-    voor officiële informatie.</p>
+    <p><strong>Disclaimer:</strong> Het Zorgkompas Frankrijk is een educatieve simulator. Alle bedragen zijn indicatief.</p>
 </footer>
 
-
-
-<!-- ========================================================= -->
-<!-- SCRIPTS -->
-<!-- ========================================================= -->
 <script src="scenarios.js"></script>
 <script src="scenarioEngine.js"></script>
 <script src="script.js"></script>
