@@ -1,298 +1,245 @@
-/* ============================================================
-   NLFR Zorgkompas – COMPLETE ENGINE (v1.0 Final)
-   ============================================================ */
+// DASHBOARD STATE
+function S(){
+    return {
+        profiel: document.getElementById("zk-profiel").value,
+        mut: Number(document.getElementById("zk-mutuelle").value),
+        ald: document.getElementById("zk-ald").checked,
+        traitant: document.getElementById("zk-traitant").checked
+    };
+}
 
-document.addEventListener("DOMContentLoaded", () => {
+// UPDATE HEADER
+function updateTotal(v, warn=""){
+    document.getElementById("zk-total-value").innerText = "€ "+v.toFixed(2);
+    document.getElementById("zk-total-warnings").innerText = warn;
+}
 
-    const totalValue = document.getElementById("zk-total-value");
-    const warningsBox = document.getElementById("zk-total-warnings");
-    const detailContainer = document.getElementById("zk-detail-container");
+/* ============= CALC UTILITIES ============= */
 
-    /* ==========================
-       INSTELLINGEN
-       ========================== */
-    function S() {
+function calcConsult(brss, cost, supplement=0){
+    const s = S();
+    const franchise = 1;
+
+    let ro = 0.70;
+    if(!s.traitant && !s.ald) ro = 0.30;
+    if(s.ald) ro = 1.00;
+
+    const amGross = brss * ro;
+    const amNet = Math.max(0, amGross - franchise);
+    const franchEff = Math.min(franchise, amGross);
+
+    const ticket = brss - amGross;
+    let mut = (s.mut>0) ? Math.max(0, ticket) : 0;
+
+    const user = (cost+supplement) - amNet - mut;
+
+    return {
+        brss, cost, supplement,
+        ameli: amNet,
+        mut,
+        user,
+        note:"Franchise €1 is wettelijk verplicht."
+    };
+}
+
+/* ================= SCENARIOS ================ */
+
+const scenarios = {
+
+    instroom: () => ({
+        title:"Instroomproblemen",
+        lines:[
+            ["CPAM verwerking","Traag / maanden"],
+            ["S1 registratie","Risico op tijdelijk geen dekking"],
+            ["URSSAF / PUMa","Administratieve vertraging"]
+        ],
+        note:"Indicatief scenario."
+    }),
+
+    huisarts_s1: () => calcConsult(26.50,26.50),
+
+    huisarts_s2: () => calcConsult(26.50,26.50,15),
+
+    spec_s1: () => calcConsult(30,30),
+
+    spec_s2: () => calcConsult(30,30,40),
+
+    buiten_parcours: () => {
+        const s = S();
+        let r = calcConsult(26.50, 26.50);
+        r.note = "Buiten parcours → Ameli vergoedt maar 30%.";
+        return r;
+    },
+
+    kine: () => {
+        const base = 16.13 * 20;
+        const am = base * 0.60;
+        const fr = 20;
         return {
-            profiel: document.getElementById("zk-profiel").value,
-            mutuelle: parseFloat(document.getElementById("zk-mutuelle").value),
-            ald: document.getElementById("zk-ald").checked,
-            traitant: document.getElementById("zk-traitant").checked
+            title:"Kiné 20 sessies",
+            lines:[
+                ["Totale kosten", "€ "+base.toFixed(2)],
+                ["Ameli", "€ "+am.toFixed(2)],
+                ["Mutuelle","€ "+(base-am).toFixed(2)],
+                ["Franchise","€ -20.00"]
+            ],
+            user:20,
+            note:"Franchise nooit gedekt."
         };
-    }
+    },
 
-    /* ==========================
-       CONSTANTEN (OFFICIEEL)
-       ========================== */
-    const FRANCHISE = 1.00;           // €1 niet vergoedbaar
-    const FORFAIT_JOUR = 20.00;       // ziekenhuisbed per dag
+    med_100: () => ({
+        title:"Medicijnen 100%",
+        lines:[["Ameli","100%"]],
+        user:0,
+        note:"ALD-middelen volledig vergoed (excl. franchise)"
+    }),
 
-    const BR = {
-        GP: 26.50,         // huisarts S1
-        SPEC: 23.00,       // specialist BRSS
-        KINE: 16.13,       // per sessie
-        XRAY: 25.00,
-        ECHO: 56.00,
-        MRI: 90.00,
-        BIOPSY: 95.00,
-        CT: 150.00
-    };
+    med_65: () => ({
+        title:"Medicijnen 65%",
+        lines:[["Ameli","65%"]],
+        user:3,
+        note:"Indicatief"
+    }),
 
-    const COST = {
-        GP_S1: 26.50,
-        GP_S2: 35.00,
-        SPEC_S1: 50.00,
-        SPEC_S2: 80.00,
-        SPEC_OUT: 50.00,
-        XRAY: 40.00,
-        ECHO: 70.00,
-        MRI: 300.00,
-        BIOPSY: 150.00,
-        CT: 450.00,
-        ONCO_DIAG: 900.00,
-        HIP: 2300.00,
-        HERNIA: 1500.00,
-        ONCO_OP: 6300.00
-    };
+    med_30: () => ({
+        title:"Medicijnen 30%",
+        lines:[["Ameli","30%"]],
+        user:6,
+        note:"Indicatief"
+    }),
 
-    /* ============================================================
-       UNIVERSAL FORMULA
-       ============================================================ */
-    function calc(brss, cost, ro, mutFactor, franchiseApplies = true) {
+    med_15: () => ({
+        title:"Medicijnen 15%",
+        lines:[["Ameli","15%"]],
+        user:10,
+        note:"Indicatief"
+    }),
 
-        // 1) Ameli BEFORE franchise
-        let ameliGross = brss * ro;
+    diabetes: () => ({
+        title:"Diabetespakket",
+        lines:[
+            ["Insuline","Gedekt"],
+            ["Strips","Gedekt"],
+            ["Materialen","Gedekt"]
+        ],
+        user:0,
+        note:"ALD 100%"
+    }),
 
-        // 2) Franchise: gaat ALTIJD van AMELI → min 0
-        let franchise = franchiseApplies ? FRANCHISE : 0;
-        let ameliNet = Math.max(0, ameliGross - franchise);
-        let franchiseUsed = Math.min(franchise, ameliGross);
+    xray: () => ({title:"Röntgen",lines:[["BRSS","€ 25"],["Kost","€ 40"]],user:5,note:"Indicatief"}),
+    echo: () => ({title:"Echo",lines:[["BRSS","€ 56"],["Kost","€ 80"]],user:15,note:"Indicatief"}),
+    mri: () => ({title:"MRI",lines:[["BRSS","€ 70"],["Kost","€ 300"]],user:80,note:"Indicatief"}),
+    biopsie: () => ({title:"Biopsie",lines:[["BRSS","€ 100"],["Kost","€ 180"]],user:40,note:"Indicatief"}),
+    ctpet: () => ({title:"CT/PET",lines:[["BRSS","€ 160"],["Kost","€ 450"]],user:130,note:"Indicatief"}),
+    onco_diag: () => ({title:"Onco Diagnostiek",lines:[["Scans","Meervoudig"],["Dagopnames","Mogelijk"]],user:0,note:"Sterk variabel"}),
 
-        // 3) Ticket modérateur (rest van BRSS)
-        const TICKET = Math.max(0, brss - ameliGross);
+    hosp_pub: () => ({
+        title:"Publiek Ziekenhuis",
+        lines:[
+            ["Operatie","Gedekt 100%"],
+            ["Forfait dag","€ 20"],
+            ["5 dagen","€ 100"]
+        ],
+        user:0,
+        note:"Mutuelle dekt forfait."
+    }),
 
-        // 4) Mutuelle dekt alleen ticket modérateur
-        let mut = mutFactor > 0 ? TICKET : 0;
+    hosp_priv: () => ({
+        title:"Privékliniek",
+        lines:[
+            ["Basis","Gedekt"],
+            ["Supplementen","€ 1200"]
+        ],
+        user:200,
+        note:"Supplement afhankelijk van contract"
+    }),
 
-        // 5) Supplementen (kosten - BRSS) → patiënt of mutuelle
-        let supplement = Math.max(0, cost - brss);
-        let mutSupp = 0;
+    op_heup: () => ({
+        title:"Heupoperatie",
+        lines:[
+            ["Basis","€ 2300"],
+            ["Forfait","€ 100"]
+        ],
+        user:0,
+        note:"Publiek: geen supplements"
+    }),
 
-        if (mutFactor > 0) {
-            const limit = brss * mutFactor - ameliGross;
-            mutSupp = Math.min(supplement, Math.max(limit, 0));
+    op_hernia: () => ({
+        title:"Hernia-operatie",
+        lines:[
+            ["Basis","€ 1600"],
+            ["Forfait","€ 100"]
+        ],
+        user:0,
+        note:"Indicatief"
+    }),
+
+    op_onco: () => ({
+        title:"Onco-operatie",
+        lines:[
+            ["Meerfasig","Ja"],
+            ["Supplementen","Afhankelijk"]
+        ],
+        user:0,
+        note:"Sterk variabel"
+    }),
+
+    ssr_pub: () => ({
+        title:"SSR Publiek",
+        lines:[
+            ["21 dagen","€ 420"],
+            ["Mutuelle","Dekt alles"]
+        ],
+        user:0,
+        note:"Forfait gedekt"
+    }),
+
+    ssr_priv: () => ({
+        title:"SSR Privé",
+        lines:[
+            ["30 dagen","€ 600"],
+            ["Mutuelle","Dekt alles"]
+        ],
+        user:0
+    })
+};
+
+/* =============== MODAL HANDLING ================== */
+
+const modal = document.getElementById("zk-modal");
+const modalBody = document.getElementById("zk-modal-body");
+document.getElementById("zk-close").onclick = ()=> modal.style.display="none";
+
+document.querySelectorAll(".zk-card").forEach(c=>{
+    c.onclick = ()=>{
+        const key = c.dataset.scenario;
+        const d = scenarios[key]();
+
+        let h = `<div class='zk-title'>${d.title}</div>`;
+
+        if(d.lines){
+            d.lines.forEach(l=>{
+                h += `<div class='zk-line'><span>${l[0]}</span><span>${l[1]}</span></div>`;
+            });
         }
 
-        let user = 
-            cost               // totale kostprijs
-            - ameliNet         // ameli netto
-            - mut              // mutuelle ticket
-            - mutSupp;         // mutuelle supplement
+        if(typeof d.ameli!="undefined"){
+            h += `<div class='zk-line'><span>Ameli</span><span>€ ${d.ameli.toFixed(2)}</span></div>`;
+        }
+        if(typeof d.mut!="undefined"){
+            h += `<div class='zk-line'><span>Mutuelle</span><span>€ ${d.mut.toFixed(2)}</span></div>`;
+        }
 
-        return {
-            ameli: ameliNet,
-            mut: mut + mutSupp,
-            user,
-            franchiseUsed
-        };
-    }
+        h += `<div class='zk-line'><strong>U betaalt</strong><strong>€ ${d.user.toFixed(2)}</strong></div>`;
 
-    /* ============================================================
-       SCENARIO’S
-       ============================================================ */
-    const SC = {
+        if(d.note){
+            h += `<div class='zk-note'>${d.note}</div>`;
+        }
 
-        /* ----------- CONSULTEN ------------- */
+        modalBody.innerHTML = h;
+        modal.style.display = "flex";
 
-        gp_s1: () => {
-            const s = S();
-            let ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
-
-            const r = calc(BR.GP, COST.GP_S1, ro, s.mutuelle);
-            return out("Huisarts S1", BR.GP, COST.GP_S1, r, 
-                "Franchise €1 is verplicht, nooit gedekt.");
-        },
-
-        gp_s2: () => {
-            const s = S();
-            let ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
-
-            const r = calc(BR.GP, COST.GP_S2, ro, s.mutuelle);
-            return out("Huisarts S2 (met supplement)", BR.GP, COST.GP_S2, r,
-                "Secteur 2 supplementen vallen buiten BRSS.");
-        },
-
-        spec_s1: () => {
-            const s = S();
-            let ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
-
-            const r = calc(BR.SPEC, COST.SPEC_S1, ro, s.mutuelle);
-            return out("Specialist S1", BR.SPEC, COST.SPEC_S1, r);
-        },
-
-        spec_s2: () => {
-            const s = S();
-            let ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
-
-            const r = calc(BR.SPEC, COST.SPEC_S2, ro, s.mutuelle);
-            return out("Specialist S2 (supplementen)", BR.SPEC, COST.SPEC_S2, r,
-                "Secteur 2 supplementen kunnen sterk oplopen.");
-        },
-
-        spec_out: () => {
-            const s = S();
-            const r = calc(BR.SPEC, COST.SPEC_OUT, 0.30, s.mutuelle);
-            return out("Specialist (Buiten Parcours)", BR.SPEC, COST.SPEC_OUT, r,
-                "Geen traitant → Ameli vergoedt 30% BRSS.");
-        },
-
-
-        /* ----------- PARAMEDISCH ------------- */
-
-        kine_20: () => {
-            const s = S();
-            const totalBRSS = BR.KINE * 20;
-            const totalCost = 16.13 * 20;
-
-            let ro = s.ald ? 1 : 0.6;
-
-            const r = calc(totalBRSS, totalCost, ro, s.mutuelle, false);
-
-            // Franchise is 20 × €1
-            const user = r.user + 20;
-
-            return out("Kiné – 20 sessies", totalBRSS, totalCost,
-                { ameli: r.ameli, mut: r.mut, user },
-                "Franchise €20 nooit gedekt.");
-        },
-
-
-        /* ----------- DIAGNOSTIEK ------------- */
-        diag_xray: () => diag("Röntgen", BR.XRAY, COST.XRAY),
-        diag_echo: () => diag("Echo", BR.ECHO, COST.ECHO),
-        diag_mri: () => diag("MRI", BR.MRI, COST.MRI),
-        diag_biopsy: () => diag("Biopsie", BR.BIOPSY, COST.BIOPSY),
-        diag_ctpet: () => diag("CT/PET", BR.CT, COST.CT),
-        diag_onco: () => diag("Oncologie Diagnostiek", 200, COST.ONCO_DIAG),
-
-
-        /* ----------- ZIEKENHUIS ------------- */
-
-        hosp_public: () => {
-            const s = S();
-            const base = COST.HIP;
-            const days = 5;
-            const forfait = days * FORFAIT_JOUR;
-
-            const ameli = base; // zware ingreep → 100%
-
-            let mut = s.mutuelle > 0 ? forfait : 0;
-            let userSupp = 0;  
-
-            return out("Publiek Ziekenhuis", base, base + forfait,
-                { ameli, mut, user: userSupp }, "");
-        },
-
-        hosp_private: () => {
-            const s = S();
-            const base = COST.HIP;
-            const supp = 1200;
-            const days = 5;
-            const forfait = days * FORFAIT_JOUR;
-
-            const ameli = base;
-            let mut = s.mutuelle > 0 ? forfait : 0;
-
-            let limit = base * s.mutuelle - ameli;
-            let covered = Math.min(supp, Math.max(limit, 0));
-            mut += covered;
-            let user = supp - covered;
-
-            return out("Privékliniek Secteur 2", base, base + supp + forfait,
-                { ameli, mut, user },
-                "Supplementen vaak hoog.");
-        },
-
-        hosp_hip: () => operation("Heupoperatie", COST.HIP, 1200),
-        hosp_hernia: () => operation("Hernia-operatie", COST.HERNIA, 600),
-        hosp_onco_op: () => operation("Onco-operatie", COST.ONCO_OP, 1800),
-
-
-        /* ----------- SSR ------------- */
-
-        ssr_21: () => ssr("SSR 21 dagen", 21),
-        ssr_30: () => ssr("SSR 30 dagen", 30)
+        updateTotal(d.user, d.note||"");
     };
-
-
-    /* ============================================================
-       HELPERFUNCTIES
-       ============================================================ */
-
-    function out(title, brss, cost, r, note = "") {
-        return {
-            title, brss, cost,
-            ameli: r.ameli,
-            mut: r.mut,
-            user: r.user,
-            note
-        };
-    }
-
-    function diag(title, brss, cost) {
-        const s = S();
-        const ro = s.ald ? 1 : (s.traitant ? 0.7 : 0.3);
-        const r = calc(brss, cost, ro, s.mutuelle, false);
-        return out(title, brss, cost, r);
-    }
-
-    function operation(title, base, supp) {
-        const s = S();
-        const days = 5;
-        const forfait = days * FORFAIT_JOUR;
-
-        const ameli = base;
-        let mut = s.mutuelle > 0 ? forfait : 0;
-
-        let limit = base * s.mutuelle - ameli;
-        let covered = Math.min(supp, Math.max(limit, 0));
-        mut += covered;
-
-        return out(title, base, base + supp + forfait,
-            { ameli, mut, user: supp - covered });
-    }
-
-    function ssr(title, days) {
-        const s = S();
-        const cost = days * FORFAIT_JOUR;
-        const mut = s.mutuelle > 0 ? cost : 0;
-        const user = s.mutuelle > 0 ? 0 : cost;
-        return out(title, 0, cost, { ameli: 0, mut, user });
-    }
-
-    /* ============================================================
-       RENDER
-       ============================================================ */
-
-    document.querySelectorAll(".zk-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const sc = card.dataset.scenario;
-            const r = SC[sc]();
-
-            totalValue.textContent = "€ " + r.user.toFixed(2);
-            warningsBox.textContent = r.note;
-
-            detailContainer.innerHTML = `
-                <div class="zk-detail-box">
-                    <div class="zk-detail-title">${r.title}</div>
-                    <div class="zk-detail-line"><span>BRSS:</span><span>€ ${r.brss.toFixed(2)}</span></div>
-                    <div class="zk-detail-line"><span>Kostprijs:</span><span>€ ${r.cost.toFixed(2)}</span></div>
-                    <div class="zk-detail-line"><span>Ameli:</span><span>€ ${r.ameli.toFixed(2)}</span></div>
-                    <div class="zk-detail-line"><span>Mutuelle:</span><span>€ ${r.mut.toFixed(2)}</span></div>
-                    <div class="zk-detail-line"><span><strong>U betaalt:</strong></span><span><strong>€ ${r.user.toFixed(2)}</strong></span></div>
-                    <div class="zk-detail-warning">${r.note}</div>
-                </div>
-            `;
-        });
-    });
-
 });
