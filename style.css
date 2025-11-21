@@ -1,123 +1,129 @@
-/* RESET */
-*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",sans-serif}
-
-/* DASHBOARD */
-#zk-dashboard{
-    background:#2c3e50;
-    color:#fff;
-    padding:15px;
-    display:flex;
-    gap:20px;
-    align-items:center;
-    position:sticky;
-    top:0;
-    z-index:10;
-    border-bottom:4px solid #800000;
+:root{
+    --primary:#800000;
+    --primary-light:#f2e6e6;
+    --neutral-dark:#2c3e50;
+    --text:#333;
 }
 
-#zk-dashboard select{
-    padding:6px 8px;
+body{
+    font-family:Segoe UI,Arial;
+    background:#fdfdfd;
+    color:var(--text);
+    max-width:900px;
+    margin:0 auto;
+    line-height:1.6;
+}
+
+.fz-dashboard-sticky{
+    position:sticky;top:0;z-index:100;
+    background:var(--neutral-dark);
+    color:white;
+    padding:15px 20px;
+    border-bottom:4px solid var(--primary);
+    display:flex;flex-wrap:wrap;
+    align-items:center;
+    gap:20px;
+}
+
+.fz-dash-title{
+    font-size:12px;
+    text-transform:uppercase;
+    color:#ccc;
+    font-weight:bold;
+}
+
+.fz-dash-controls{display:flex;gap:15px;flex-wrap:wrap;}
+
+.fz-dash-select{
+    padding:8px;
     border-radius:4px;
     border:none;
+    font-weight:bold;
+    cursor:pointer;
 }
 
-.zk-check{
-    display:flex;
-    align-items:center;
-    gap:6px;
+.fz-checkbox-wrapper{
+    display:flex;align-items:center;gap:8px;color:white;cursor:pointer;
 }
 
-#zk-total-box{
-    margin-left:auto;
-    background:#fff;
-    padding:10px 18px;
-    border-radius:6px;
-    color:#222;
-    border-left:4px solid #800000;
-}
-
-#zk-total-label{font-size:13px;color:#555}
-#zk-total-value{font-size:24px;color:#800000;font-weight:bold}
-
-/* SECTIONS */
-.zk-section{
-    max-width:900px;
-    margin:30px auto;
-    padding:0 15px;
-}
-
-.zk-h2{
-    font-size:20px;
-    font-weight:700;
-    color:#800000;
-    margin-bottom:12px;
-}
-
-/* CARDS */
-.zk-card{
-    background:#fff;
-    border:1px solid #ddd;
-    padding:16px;
+/* --- SECTIONS --- */
+.fz-section{
+    background:white;
+    border:1px solid #e0e0e0;
     border-radius:8px;
-    margin-bottom:12px;
-    cursor:pointer;
-    transition:.2s;
+    margin:30px 0;
+    box-shadow:0 2px 5px rgba(0,0,0,0.05);
 }
 
-.zk-card:hover{
-    border-color:#800000;
-    box-shadow:0 2px 8px rgba(0,0,0,0.15);
+.fz-section-header{
+    background:var(--primary);
+    color:white;
+    padding:15px 20px;
+    display:flex;align-items:center;gap:15px;
 }
 
-.zk-card h3{
-    color:#800000;
-    margin-bottom:4px;
-    font-size:17px;
+.fz-step-num{
+    width:30px;height:30px;border-radius:50%;
+    background:rgba(255,255,255,0.2);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:bold;
 }
 
-.zk-card p{
-    font-size:13px;
-    color:#555;
+.fz-section-title{font-size:18px;font-weight:600;margin:0;}
+
+.fz-content{padding:20px;}
+
+.fz-text-block{
+    margin-bottom:20px;
+    font-size:14px;color:#555;
+    border-left:3px solid #eee;
+    padding-left:15px;
 }
 
-/* MODAL */
-#zk-modal{
+/* CALC MODULE */
+.fz-calc-module{
+    background:var(--primary-light);
+    padding:20px;border-radius:6px;
+    border:1px solid #e0caca;
+}
+
+.fz-calc-row{
+    display:flex;justify-content:space-between;
+    font-size:14px;margin-bottom:8px;
+}
+
+.fz-calc-total{
+    border-top:1px solid #ccc;
+    padding-top:10px;margin-top:10px;
+    font-size:18px;font-weight:bold;
+    color:var(--primary);
+}
+
+/* DETAILS */
+.fz-details{
+    margin-top:15px;background:white;
+    border:1px solid #ccc;
+    padding:10px;border-radius:4px;
     display:none;
-    position:fixed;
-    top:0; left:0; right:0; bottom:0;
-    background:rgba(0,0,0,0.55);
-    justify-content:center;
-    align-items:center;
-    z-index:1000;
+    font-size:12px;font-family:monospace;
+}
+.fz-details.open{display:block;}
+.fz-detail-row{
+    display:flex;justify-content:space-between;
+    border-bottom:1px dashed #eee;
+    padding:4px 0;
 }
 
-#zk-modal-content{
-    background:#fff;
-    padding:25px;
-    width:90%;
-    max-width:600px;
-    border-radius:10px;
-    position:relative;
-}
-
-#zk-close{
-    position:absolute;
-    top:10px;
-    right:15px;
+/* BUTTON */
+.fz-toggle-btn{
+    background:transparent;
+    border:1px solid var(--primary);
+    color:var(--primary);
+    padding:5px 10px;
+    border-radius:4px;
     cursor:pointer;
-    font-size:22px;
+    font-size:12px;
+    margin-top:10px;
 }
+.fz-toggle-btn:hover{background:var(--primary);color:white;}
 
-.zk-line{
-    display:flex;
-    justify-content:space-between;
-    padding:6px 0;
-    border-bottom:1px solid #eee;
-    font-size:14px;
-}
-
-.zk-note{
-    margin-top:12px;
-    font-size:13px;
-    color:#800000;
-}
