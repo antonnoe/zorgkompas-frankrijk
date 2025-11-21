@@ -1,20 +1,13 @@
 /* ============================================================
-   ZORGKOMPAS REKEN ENGINE - FINAL
-   Geschikt voor alle scenario's (Ambu, Chemo, Privé, etc.)
+   ZORGKOMPAS ENGINE (2025 LOGIC)
    ============================================================ */
 
 import { ZK_SCENARIOS } from "./scenarios.js";
 
-// ------------------------------------------------------------
-// 1. SCENARIO OPHALEN
-// ------------------------------------------------------------
 export function zkGetScenario(id) {
-    return ZK_SCENARIOS.find(s => s.id === id) || null;
+    return ZK_SCENARIOS.find(s => s.id === id);
 }
 
-// ------------------------------------------------------------
-// 2. HOOFDBEREKENING (LOOP DOOR STAPPEN)
-// ------------------------------------------------------------
 export function zkRunScenario(scenarioId, state) {
     const scenario = zkGetScenario(scenarioId);
     if (!scenario) return null;
@@ -34,7 +27,7 @@ export function zkRunScenario(scenarioId, state) {
     });
 
     return {
-        scenario: scenario,
+        scenario,
         steps: calculatedSteps,
         totals: {
             user: round(totalUser),
@@ -44,147 +37,115 @@ export function zkRunScenario(scenarioId, state) {
     };
 }
 
-// ------------------------------------------------------------
-// 3. BEREKENING PER STAP
-// ------------------------------------------------------------
 function calculateStep(step, state) {
     let cost = 0;
     let brss = step.brss || 0;
-    let notes = step.notes ? (Array.isArray(step.notes) ? [...step.notes] : [step.notes]) : [];
-    
-    // A. KOSTEN BEPALEN (Publiek vs Privé logica)
-    // --------------------------------------------------------
+    let notes = step.notes ? [...step.notes] : [];
+    let lex = step.lex || [];
+
+    // 1. KOSTEN BEPALEN
     if (step.type === "consult") {
         cost = step.cost;
     } 
     else if (step.type === "medicatie") {
-        step.items.forEach(i => { cost += i.cost; });
-        brss = step.items.reduce((sum, item) => sum + item.brss, 0);
+        step.items.forEach(i => cost += i.cost);
+        brss = step.items.reduce((sum, i) => sum + i.brss, 0);
     } 
     else if (step.type === "kine") {
         cost = step.cost * step.sessions;
         brss = step.brss * step.sessions;
     }
     else if (step.type === "diagnostiek" || step.type === "operation") {
-        // HIER ZAT DE FOUT: we checken nu state.private (niet isPrivate)
         if (state.private && step.cost_private) {
             cost = step.cost_private.base + (step.cost_private.supplement || 0);
-            notes.push("Privé tarief (incl. supplementen)");
+            if(step.cost_private.supplement > 0) notes.push("Privé supplement");
         } else {
             cost = step.cost_public || step.cost; 
         }
         
-        if (step.type === "operation") {
-            const liggeld = (step.days || 0) * (step.forfait_jour || 0);
-            cost += liggeld; 
+        if (step.type === "operation" && step.days) {
+            cost += (step.days * step.forfait_jour); 
         }
     }
     else if (step.type === "SSR") {
         cost = step.days * step.forfait_jour;
-        brss = 0; 
+        brss = 0; // SSR verblijf valt niet onder BRSS
     }
-    else if (step.type === "ambulance") {
-        cost = step.base + (step.distance_km * step.supplement_km);
-        brss = cost; // Vaak basis voor vergoeding
-    }
-    else if (step.type === "treatment") { // Voor chemo/bestraling
+    else if (step.type === "treatment") {
         cost = step.cost;
-        // Bij chemo is BRSS vaak gelijk aan kosten (gereguleerd)
-        if(!brss) brss = cost; 
-    }
-    else if (step.type === "urgence") {
-        cost = state.private ? (step.cost_private || 0) : (step.cost_public || 0);
+        brss = step.brss || cost;
     }
 
-    // B. AMELI (SÉCU) DEKKING
-    // --------------------------------------------------------
-    let ameliRate = 0.70; // Standaard
+    // 2. AMELI (SÉCU)
+    let ameliRate = 0.70; // Standaard 70%
 
-    // Is er ALD? (Chronisch)
-    // Check zowel de algemene state als de stap (sommige chemo is altijd ALD)
+    // ALD Check (State of Stap)
     const isAld = state.ald || step.ald;
 
     if (isAld) {
         ameliRate = 1.0;
-        if (!notes.includes("ALD Dekking")) notes.push("ALD Dekking (100% basis)");
-    } 
-    else {
-        // Specifieke rates als GEEN ALD
+        if (!notes.includes("ALD 100%")) notes.push("ALD 100% Dekking");
+    } else {
         if (step.type === "kine") ameliRate = 0.60;
-        if (step.type === "medicatie") ameliRate = 0.65;
-        if (step.type === "ambulance") ameliRate = 0.65;
-        if (step.type === "operation" && step.brss > 120) ameliRate = 1.0; // Zware operaties
+        if (step.type === "medicatie") ameliRate = 0.65; 
+        if (step.type === "operation" && brss > 120) ameliRate = 1.0;
     }
 
-    // Strafkorting (Geen huisarts)
-    if (!state.traitant && !isAld && step.role !== 'huisarts' && step.type === 'consult') {
+    // Strafkorting (Geen traitant)
+    if (!state.traitant && !isAld && step.role !== 'Huisarts' && step.type === 'consult') {
         ameliRate = 0.30;
         notes.push("Strafkorting (buiten parcours)");
     }
 
     let ameliPay = brss * ameliRate;
 
-    // C. FRANCHISES (Eigen risico)
-    // --------------------------------------------------------
+    // 3. FRANCHISES 2025
     let franchise = 0;
-    if (step.type === "consult") franchise = 1.00;
-    if (step.type === "medicatie") franchise = (step.items || []).length * 0.50;
-    if (step.type === "kine") franchise = step.sessions * 0.50;
-    if (step.type === "ambulance") franchise = 2.00;
+    // Consult: verhoogd naar €2
+    if (step.type === "consult" || step.type === "diagnostiek") franchise = 2.00;
+    // Medicatie: verhoogd naar €1 per doosje
+    if (step.type === "medicatie") franchise = (step.items || []).length * 1.00;
+    // Kine: €2 per sessie (limiet per jaar bestaat, maar hier per geval)
+    if (step.type === "kine") franchise = step.sessions * 2.00;
     
-    // SSR Forfait wordt NOOIT vergoed door Ameli
-    if (step.type === "SSR") ameliPay = 0;
+    if (step.type === "SSR") ameliPay = 0; // Forfait journalier niet door Ameli
 
     ameliPay = Math.max(0, ameliPay - franchise);
 
-    // D. MUTUELLE DEKKING
-    // --------------------------------------------------------
+    // 4. MUTUELLE
     let mutuellePay = 0;
-    
     if (state.mutuelle > 0) {
-        let mutuelleLimit = (brss * state.mutuelle); 
+        let limit = brss * state.mutuelle;
         
-        // Bij SSR en Forfait Journalier dekt de mutuelle vaak de werkelijke kosten
+        // SSR & Operatie liggeld: Mutuelle dekt 'Frais Réels' (volledige kosten) vaak
         if (step.type === "SSR" || (step.type === "operation" && step.forfait_jour)) {
-             mutuelleLimit = cost; 
+            limit = cost; 
         }
 
-        let remainder = cost - ameliPay;
-        mutuellePay = Math.min(remainder, mutuelleLimit - ameliPay);
+        let gap = cost - ameliPay;
+        mutuellePay = Math.min(gap, limit - ameliPay);
 
-        // Mutuelle mag franchise niet dekken (tenzij liggeld)
-        if (step.type !== "SSR" && step.type !== "operation") {
-            const maxLegalCover = cost - ameliPay - franchise;
-            if (mutuellePay > maxLegalCover) mutuellePay = maxLegalCover;
+        // Mutuelle mag franchise NIET dekken (behalve bij liggeld ziekenhuis)
+        if (step.type !== "SSR" && !(step.type === "operation" && step.days)) {
+            const maxLegal = cost - ameliPay - franchise;
+            if (mutuellePay > maxLegal) mutuellePay = maxLegal;
         }
     }
-
     mutuellePay = Math.max(0, mutuellePay);
 
-    // E. REST VOOR GEBRUIKER
-    // --------------------------------------------------------
+    // 5. USER
     let userPay = cost - ameliPay - mutuellePay;
 
     return {
-        raw: step,
-        label: step.label || formatLabel(step),
-        cost_user: round(userPay),
-        cost_ameli: round(ameliPay),
-        cost_mutuelle: round(mutuellePay),
-        notes: notes
+        label: step.name || step.label || `${capitalize(step.type)} ${step.role || ''}`,
+        cost_user: userPay,
+        cost_ameli: ameliPay,
+        cost_mutuelle: mutuellePay,
+        cost_total: cost,
+        notes: notes,
+        lex: lex
     };
 }
 
-// ------------------------------------------------------------
-// 4. HULPFUNCTIES
-// ------------------------------------------------------------
-function round(n) {
-    return Math.round(n * 100) / 100;
-}
-
-function formatLabel(step) {
-    if(step.type === "consult") return `Consult ${step.role || ''}`;
-    if(step.type === "medicatie") return `Medicatie (${step.items?.length || 0} items)`;
-    if(step.type === "kine") return `Fysiotherapie (${step.sessions} sessies)`;
-    return step.type;
-}
+function round(n) { return Math.round(n * 100) / 100; }
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
