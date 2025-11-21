@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Zorgkompas Frankrijk – NLFR</title>
+    <meta name="description" content="Interactieve simulatie van het Franse zorgstelsel: Ameli, mutuelles, ALD, ziekenhuisopname en revalidatie. Educatieve rekentool voor Nederlanders en Vlamingen in Frankrijk." />
+
+    <!-- Huisstijl kleur -->
+    <meta name="theme-color" content="#800000">
+
+    <!-- Stylesheet wordt later toegevoegd -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ========================= -->
+    <!--   DASHBOARD (sticky top)  -->
+    <!-- ========================= -->
+    <div class="fz-dashboard-sticky">
+        <div>
+            <div class="fz-dash-title">Jouw Zorgprofiel</div>
+            <div class="fz-dash-sub">Instellingen gelden voor alle fases</div>
+        </div>
+
+        <div class="fz-dash-controls">
+
+            <select id="profile-status" class="fz-dash-select" onchange="updateSystem()">
+                <option value="worker">A. Werkende / ZZP</option>
+                <option value="pensioner">B. Verdragsgerechtigd (S1)</option>
+                <option value="resident">C. Inwoner (PUMa)</option>
+            </select>
+
+            <select id="profile-mutuelle" class="fz-dash-select" onchange="updateSystem()">
+                <option value="0">Geen Mutuelle</option>
+                <option value="1.0">100%</option>
+                <option value="2.0" selected>200%</option>
+                <option value="3.0">300%</option>
+                <option value="4.0">400%</option>
+            </select>
+
+            <label class="fz-checkbox-wrapper">
+                <input type="checkbox" id="profile-ald" onchange="updateSystem()">
+                <span>ALD (Chronische ziekte)</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!--     CONTAINER / TITLES    -->
+    <!-- ========================= -->
+    <div class="fz-container">
+
+        <h1 class="fz-main-title">Het Franse Zorgkompas</h1>
+        <p class="fz-intro">
+            Een educatieve simulator: ontdek wat Ameli, uw Mutuelle en uzelf betalen in 5 realistische zorgscenario’s.
+        </p>
+
+        <!-- ========================= -->
+        <!--   FASE 1: INSTROOM        -->
+        <!-- ========================= -->
+        <section class="fz-section">
+            <header class="fz-section-header">
+                <div class="fz-step-num">1</div>
+                <h2>Instroom & Administratie</h2>
+            </header>
+
+            <div class="fz-content">
+
+                <div class="fz-text-block">
+                    <strong id="txt-entry-title">...</strong><br>
+                    <span id="txt-entry-desc">...</span>
+                </div>
+
+                <div class="fz-box">
+                    <strong>Uw Médecin Traitant</strong>
+                    <p>
+                        Zonder ingeschreven huisarts vergoedt Ameli slechts
+                        <strong>30% van het BRSS-tarief</strong> i.p.v. 70%.
+                    </p>
+
+                    <label class="fz-checkbox-wrapper">
+                        <input type="checkbox" id="setting-traitant" checked onchange="updateSystem()">
+                        <span>Ja, mijn huisarts staat geregistreerd</span>
+                    </label>
+
+                    <div class="fz-info">
+                        BRSS = Officieel Ameli-tarief waarop alle vergoedingen gebaseerd zijn.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================= -->
+        <!--   FASE 2 - Specialist     -->
+        <!-- ========================= -->
+        <section class="fz-section">
+            <header class="fz-section-header">
+                <div class="fz-step-num">2</div>
+                <h2>Huisarts & Specialist</h2>
+            </header>
+
+            <div class="fz-content">
+
+                <div class="fz-text-block">
+                    Specialisten in Secteur 2 mogen <strong>dépassements</strong> (bijbetalingen) rekenen.
+                    Mutuelle-dekking is beperkt tot uw contract.
+                </div>
+
+                <div class="fz-calc-module">
+                    <div class="fz-calc-title">Scenario: Consult bij Specialist</div>
+
+                    <select id="input-f2-cost" class="fz-input-select" onchange="updateSystem()">
+                        <option value="30">Huisarts (€30)</option>
+                        <option value="50" selected>Specialist (€50)</option>
+                        <option value="80">Specialist Parijs (€80)</option>
+                    </select>
+
+                    <div class="fz-calc-row">
+                        <span>Ameli:</span><span id="res-f2-ameli">€ 0,00</span>
+                    </div>
+
+                    <div class="fz-calc-row">
+                        <span>Mutuelle:</span><span id="res-f2-mut">€ 0,00</span>
+                    </div>
+
+                    <div class="fz-calc-row small">
+                        <span>Forfait (€2):</span><span>- € 2,00</span>
+                    </div>
+
+                    <div class="fz-calc-total">
+                        <span>U betaalt:</span><span id="res-f2-user">€ 0,00</span>
+                    </div>
+
+                    <button class="fz-toggle-btn" onclick="toggleDetails('det-f2')">Toon berekening</button>
+                    <div id="det-f2" class="fz-details"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================= -->
+        <!--   FASE 3 - Fysio          -->
+        <!-- ========================= -->
+        <section class="fz-section">
+            <header class="fz-section-header">
+                <div class="fz-step-num">3</div>
+                <h2>Fysio & Medicijnen</h2>
+            </header>
+
+            <div class="fz-content">
+
+                <div class="fz-text-block">
+                    De <strong>franchise médicale</strong> (€1 per sessie/doosje, max €50/jaar) mag wettelijk
+                    niet door de Mutuelle worden vergoed.
+                </div>
+
+                <div class="fz-calc-module">
+                    <div class="fz-calc-title">20 sessies Fysio</div>
+
+                    <div class="fz-calc-row">
+                        <span>Totaal:</span><span>€ 322,60</span>
+                    </div>
+
+                    <hr>
+
+                    <div class="fz-calc-row"><span>Ameli:</span><span id="res-f3-ameli">€ 0,00</span></div>
+                    <div class="fz-calc-row"><span>Mutuelle:</span><span id="res-f3-mut">€ 0,00</span></div>
+                    <div class="fz-calc-row warn"><span>Franchise:</span><span>- € 20,00</span></div>
+
+                    <div class="fz-calc-total">
+                        <span>U betaalt:</span><span id="res-f3-user">€ 20,00</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================= -->
+        <!--   FASE 4 - Ziekenhuis     -->
+        <!-- ========================= -->
+        <section class="fz-section">
+            <header class="fz-section-header">
+                <div class="fz-step-num">4</div>
+                <h2>Ziekenhuis & Operatie</h2>
+            </header>
+
+            <div class="fz-content">
+
+                <div class="fz-choice-row">
+                    <button id="btn-hosp-pub" class="fz-choice active" onclick="setHospital('pub')">Publiek</button>
+                    <button id="btn-hosp-priv" class="fz-choice" onclick="setHospital('priv')">Privékliniek</button>
+                </div>
+
+                <div class="fz-calc-module">
+
+                    <div class="fz-calc-title">Scenario: Heupprothese (5 dagen)</div>
+
+                    <div class="fz-calc-row"><span>Basis:</span><span>€ 2.300,00</span></div>
+                    <div class="fz-calc-row" id="row-supplements"><span>Supplementen:</span><span>€ 1.200,00</span></div>
+                    <div class="fz-calc-row"><span>Forfait:</span><span>€ 100,00</span></div>
+
+                    <hr>
+
+                    <div class="fz-calc-row"><span>Ameli:</span><span id="res-f4-ameli"></span></div>
+                    <div class="fz-calc-row"><span>Mutuelle:</span><span id="res-f4-mut"></span></div>
+
+                    <div class="fz-calc-total">
+                        <span>U betaalt:</span><span id="res-f4-user"></span>
+                    </div>
+
+                    <button class="fz-toggle-btn" onclick="toggleDetails('det-f4')">Toon analyse</button>
+                    <div id="det-f4" class="fz-details"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================= -->
+        <!--   FASE 5 - Revalidatie    -->
+        <!-- ========================= -->
+        <section class="fz-section">
+            <header class="fz-section-header">
+                <div class="fz-step-num">5</div>
+                <h2>Revalidatie (SSR)</h2>
+            </header>
+
+            <div class="fz-content">
+                <div class="fz-box">
+                    <strong>30 dagen SSR: €600</strong>
+                    <p id="res-f5-text"></p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JS volgt in script.js -->
+    <script src="script.js"></script>
+
+</body>
+</html>
