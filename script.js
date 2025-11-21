@@ -1,150 +1,145 @@
-// CONSTANTS
-const BRSS_GP = 26.50;
-const BRSS_SPEC = 23.00;
-const FORFAIT = 1.00;
-const FORFAIT_JOUR = 20;
-const BRSS_HIP = 2300;
+/* ============================================================
+   NLFR Zorgkompas – script.js
+   UI-binding voor:
+   - Floating bar (status verzekerde)
+   - Scenario selector
+   - ScenarioEngine.js (berekeningen)
+   ============================================================ */
 
-let state = {
-    profile: "worker",
-    mutuelle: 2,
-    ald: false,
-    traitant: true,
-    hospitalType: "pub",
-    specCost: 50
-};
+import { ZK_SCENARIOS } from "./scenarios.js";
+import { zkRunScenario } from "./scenarioEngine.js";
 
-function toggleDetails(id){
-    document.getElementById(id).classList.toggle("open");
+/* ------------------------------------------------------------
+   UI-ELEMENTEN
+------------------------------------------------------------ */
+const elScenarioSelect = document.getElementById("zk-scenario-select");
+const elDetail = document.getElementById("zk-detail-container");
+
+const elStatus = document.getElementById("profile-status");
+const elMutuelle = document.getElementById("profile-mutuelle");
+const elAld = document.getElementById("profile-ald");
+const elTraitant = document.getElementById("profile-traitant");
+const elPrivate = document.getElementById("profile-private");
+
+const elTotalLabel = document.getElementById("zk-total-value");
+const elTotalWarnings = document.getElementById("zk-total-warnings");
+
+/* ------------------------------------------------------------
+   1. SCENARIO SELECTIE OPBOUWEN
+------------------------------------------------------------ */
+export function zkInitScenarioSelector() {
+    ZK_SCENARIOS.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = s.label;
+        elScenarioSelect.appendChild(opt);
+    });
 }
 
-function setHospital(type){
-    state.hospitalType = type;
-
-    document.getElementById("btn-hosp-pub").style.background =
-        type==="pub" ? "#800000" : "#fff";
-    document.getElementById("btn-hosp-pub").style.color =
-        type==="pub" ? "#fff" : "#333";
-
-    document.getElementById("btn-hosp-priv").style.background =
-        type==="priv" ? "#800000" : "#fff";
-    document.getElementById("btn-hosp-priv").style.color =
-        type==="priv" ? "#fff" : "#333";
-
-    updateSystem();
+/* ------------------------------------------------------------
+   2. LEES FLOATING BAR STATUS
+------------------------------------------------------------ */
+export function zkGetUserState() {
+    return {
+        status: elStatus.value,
+        mutuelle: parseFloat(elMutuelle.value),
+        ald: elAld.checked,
+        traitant: elTraitant.checked,
+        isPrivate: elPrivate.checked
+    };
 }
 
-function updateSystem(){
-    state.profile = document.getElementById("profile-status").value;
-    state.mutuelle = Number(document.getElementById("profile-mutuelle").value);
-    state.ald = document.getElementById("profile-ald").checked;
-    state.traitant = document.getElementById("setting-traitant").checked;
-    state.specCost = Number(document.getElementById("input-f2-cost").value);
+/* ------------------------------------------------------------
+   3. SCENARIO RENDEREN NA SELECTIE
+------------------------------------------------------------ */
+export function zkRunSelectedScenario() {
+    const scenarioId = elScenarioSelect.value;
+    if (!scenarioId) return;
 
-    updateEntryText();
-    calcSpecialist();
-    calcPhysio();
-    calcHospital();
-    calcRehab();
-}
+    const state = zkGetUserState();
+    const result = zkRunScenario(scenarioId, state);
 
-function updateEntryText(){
-    const t = document.getElementById("txt-entry-title");
-    const d = document.getElementById("txt-entry-desc");
-
-    if(state.profile==="worker"){
-        t.innerText="Profiel: Werkende / ZZP";
-        d.innerText="Je valt onder PUMa via loon of URSSAF-bijdragen.";
-    } 
-    else if(state.profile==="pensioner"){
-        t.innerText="Profiel: Gepensioneerde (S1)";
-        d.innerText="Frankrijk betaalt je zorg, NL verrekent via CAK.";
-    } 
-    else {
-        t.innerText="Profiel: Inwoner";
-        d.innerText="PUMa op basis van verblijf. Let op CSM bij vermogen.";
-    }
-}
-
-function calcSpecialist(){
-    const fee = state.specCost;
-    const brss = (fee===30)?BRSS_GP:BRSS_SPEC;
-
-    let ro = 0.70;
-    if(state.ald) ro = 1.00;
-    if(!state.traitant && !state.ald) ro = 0.30;
-
-    const amGross = brss * ro;
-    const amNet = Math.max(0, amGross - FORFAIT);
-
-    const ticket = brss - amGross;
-    const mut = state.mutuelle>0 ? Math.max(ticket,0) : 0;
-
-    const user = fee - amNet - mut;
-
-    document.getElementById("res-f2-ameli").innerText="€ "+amNet.toFixed(2);
-    document.getElementById("res-f2-mut").innerText="€ "+mut.toFixed(2);
-    document.getElementById("res-f2-user").innerText="€ "+user.toFixed(2);
-
-    let h = "";
-    h+=row("BRSS","€ "+brss.toFixed(2));
-    h+=row("RO %",(ro*100)+"%");
-    h+=row("Ameli bruto","€ "+amGross.toFixed(2));
-    h+=row("Ticket modérateur","€ "+ticket.toFixed(2));
-
-    document.getElementById("det-f2").innerHTML=h;
-}
-
-function calcPhysio(){
-    const total = 20 * 16.13;
-    const franchise = 20;
-    const amGross = total * (state.ald?1:0.60);
-    const amNet = Math.max(0, amGross - franchise);
-    const mut = total - amGross;
-
-    const user = total - amNet - mut;
-
-    document.getElementById("res-f3-ameli").innerText="€ "+amNet.toFixed(2);
-    document.getElementById("res-f3-mut").innerText="€ "+mut.toFixed(2);
-    document.getElementById("res-f3-user").innerText="€ "+user.toFixed(2);
-}
-
-function calcHospital(){
-    const base = BRSS_HIP;
-    const supplements = state.hospitalType==="priv" ? 1200 : 0;
-    const forfait = 5 * FORFAIT_JOUR;
-
-    const am = base;
-
-    let mut = 0;
-    if(state.mutuelle>0){
-        mut += forfait;
-        mut += supplements;
+    if (!result) {
+        elDetail.innerHTML = "<p>Scenario niet gevonden.</p>";
+        return;
     }
 
-    const user = base + supplements + forfait - am - mut;
-
-    document.getElementById("res-f4-ameli").innerText="€ "+am.toFixed(2);
-    document.getElementById("res-f4-mut").innerText="€ "+mut.toFixed(2);
-    document.getElementById("res-f4-user").innerText="€ "+user.toFixed(2);
-
-    let h="";
-    h+=row("Basis","€ "+base);
-    h+=row("Supp","€ "+supplements);
-    h+=row("Forfait","€ "+forfait);
-    document.getElementById("det-f4").innerHTML=h;
+    renderScenario(result);
 }
 
-function calcRehab(){
-    if(state.mutuelle>0){
-        document.getElementById("res-f5-text").innerHTML=
-            "<span style='color:green'>Volledig vergoed</span>";
-    } else {
-        document.getElementById("res-f5-text").innerHTML=
-            "<span style='color:red'>€ 600 zelf betalen</span>";
-    }
+/* ------------------------------------------------------------
+   4. DETAIL-RENDERING VAN EEN COMPLEET SCENARIO
+------------------------------------------------------------ */
+function renderScenario(res) {
+
+    const s = res.scenario;
+    const steps = res.steps;
+    const totals = res.totals;
+
+    let html = `
+        <div class="zk-detail-box">
+            <div class="zk-detail-title">${s.label}</div>
+            <p>${s.description}</p>
+            <hr>
+    `;
+
+    steps.forEach((step, i) => {
+
+        html += `
+            <div class="zk-detail-line">
+                <strong>Stap ${i+1}: ${step.raw.type}</strong>
+                <span><strong>U betaalt: € ${step.cost_user.toFixed(2)}</strong></span>
+            </div>
+
+            <div class="zk-detail-sub">
+                <div class="zk-detail-line"><span>Ameli:</span> <span>€ ${step.cost_ameli.toFixed(2)}</span></div>
+                <div class="zk-detail-line"><span>Mutuelle:</span> <span>€ ${step.cost_mutuelle.toFixed(2)}</span></div>
+        `;
+
+        if (step.notes.length > 0) {
+            html += `<div class="zk-detail-warning">`;
+            step.notes.forEach(n => html += `<div>${n}</div>`);
+            html += `</div>`;
+        }
+
+        html += `<br>`;
+    });
+
+    html += `
+        <hr>
+        <div class="zk-detail-title">Totaalresultaat</div>
+        <div class="zk-detail-line"><span>Ameli:</span> <span>€ ${totals.ameli.toFixed(2)}</span></div>
+        <div class="zk-detail-line"><span>Mutuelle:</span> <span>€ ${totals.mutuelle.toFixed(2)}</span></div>
+
+        <div class="zk-detail-line" style="font-size:18px; font-weight:bold;">
+            <span>U betaalt totaal:</span> <span>€ ${totals.user.toFixed(2)}</span>
+        </div>
+    `;
+
+    html += `</div>`;
+    elDetail.innerHTML = html;
+
+    elTotalLabel.textContent = `€ ${totals.user.toFixed(2)}`;
+
+    // waarschuwingen tonen
+    let warn = "";
+    if (state.mutuelle === 0) warn += "Geen mutuelle → risico bij specialist / opname. ";
+    if (!state.traitant) warn += "Geen médecin traitant → strafkorting 35%. ";
+    elTotalWarnings.textContent = warn;
 }
 
-function row(a,b){return `<div class="fz-detail-row"><span>${a}</span><span>${b}</span></div>`;}
+/* ------------------------------------------------------------
+   5. EVENTS KOPPELEN
+------------------------------------------------------------ */
+elScenarioSelect.addEventListener("change", zkRunSelectedScenario);
 
-updateSystem();
+elStatus.addEventListener("change", zkRunSelectedScenario);
+elMutuelle.addEventListener("change", zkRunSelectedScenario);
+elAld.addEventListener("change", zkRunSelectedScenario);
+elTraitant.addEventListener("change", zkRunSelectedScenario);
+elPrivate.addEventListener("change", zkRunSelectedScenario);
+
+/* ------------------------------------------------------------
+   6. INIT
+------------------------------------------------------------ */
+zkInitScenarioSelector();
