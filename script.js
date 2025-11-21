@@ -1,13 +1,24 @@
 /* ============================================================
-   ZORGKOMPAS SCRIPT.JS – DEBUG VERSION
+   ZORGKOMPAS CONTROLLER
    ============================================================ */
 
 import { ZK_SCENARIOS } from "./scenarios.js";
 import { zkRunScenario } from "./scenarioEngine.js";
 
-console.log("Script gestart..."); // Debug log
+// LEXICON DATABASE (Voor tooltips)
+const LEXICON_DB = {
+    "BRSS": "Basis de Remboursement: Het wettelijk vastgestelde basistarief waarop de Sécu vergoedt.",
+    "Secteur 1": "Arts houdt zich strikt aan de overheidstarieven. Geen supplementen.",
+    "Secteur 2": "Arts mag zelf tarieven bepalen. Het meerdere (supplement) betaalt u zelf of de mutuelle.",
+    "OPTAM": "Arts met gematigde tarieven. Betere vergoeding dan 'puur' Secteur 2.",
+    "ALD": "Affection Longue Durée: Chronische ziekte waarbij basiszorg 100% vergoed wordt.",
+    "Franchise": "Eigen risico per handeling (bijv. €2 per artsbezoek). Niet vergoed door mutuelle.",
+    "Forfait Journalier": "Dagbedrag voor kost & inwoning in ziekenhuis/kliniek (€20/dag).",
+    "Parcours de soins": "Zorgtraject via de huisarts. Direct naar specialist gaan = minder vergoeding.",
+    "Dépassements": "Ereloonsupplementen bovenop het basistarief.",
+    "SSR": "Soins de Suite et de Réadaptation: Revalidatiezorg na ziekenhuisopname."
+};
 
-// 1. STATE
 const ZK_STATE = {
     status: "worker",
     mutuelle: 2,
@@ -17,25 +28,10 @@ const ZK_STATE = {
     scenario: null
 };
 
-// 2. INIT
+// INIT
 function initApp() {
-    console.log("Init app gestart..."); // Debug log
-    
     const select = document.getElementById("zk-scenario-select");
     
-    if (!select) {
-        console.error("FOUT: Kan dropdown element 'zk-scenario-select' niet vinden in HTML!");
-        return;
-    }
-
-    if (!ZK_SCENARIOS || ZK_SCENARIOS.length === 0) {
-        console.error("FOUT: Geen scenario's gevonden in import!");
-        return;
-    }
-
-    // Reset dropdown
-    select.innerHTML = '<option value="">-- Kies een scenario --</option>';
-
     // Vul dropdown
     ZK_SCENARIOS.forEach(s => {
         const opt = document.createElement("option");
@@ -44,113 +40,131 @@ function initApp() {
         select.appendChild(opt);
     });
 
-    console.log(`Succes: ${ZK_SCENARIOS.length} scenario's ingeladen.`);
-
     attachListeners();
 }
 
 function attachListeners() {
-    // Koppel inputs veilig (check of ze bestaan)
-    safeListen("zk-status", "change", (e) => { ZK_STATE.status = e.target.value; updateCalculation(); });
-    safeListen("zk-mutuelle", "change", (e) => { ZK_STATE.mutuelle = Number(e.target.value); updateCalculation(); });
-    safeListen("zk-opt-ald", "change", (e) => { ZK_STATE.ald = e.target.checked; updateCalculation(); });
-    safeListen("zk-opt-traitant", "change", (e) => { ZK_STATE.traitant = e.target.checked; updateCalculation(); });
-    safeListen("zk-opt-private", "change", (e) => { ZK_STATE.private = e.target.checked; updateCalculation(); });
-    
-    safeListen("zk-scenario-select", "change", (e) => {
+    const ids = ["zk-status", "zk-mutuelle", "zk-opt-ald", "zk-opt-traitant", "zk-opt-private"];
+    ids.forEach(id => {
+        document.getElementById(id).addEventListener("change", updateState);
+    });
+
+    document.getElementById("zk-scenario-select").addEventListener("change", (e) => {
         ZK_STATE.scenario = e.target.value;
         updateCalculation();
     });
 }
 
-// Hulpfunctie om crashes te voorkomen als ID niet bestaat
-function safeListen(id, event, handler) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.addEventListener(event, handler);
-    } else {
-        console.warn(`Waarschuwing: Element ${id} niet gevonden.`);
-    }
+function updateState(e) {
+    const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    const key = e.target.id.replace("zk-opt-", "").replace("zk-", "");
+    
+    // Mapping fixes
+    if(key === "status") ZK_STATE.status = val;
+    else if(key === "mutuelle") ZK_STATE.mutuelle = Number(val);
+    else ZK_STATE[key] = val;
+
+    updateCalculation();
 }
 
-// 3. UPDATE & RENDER
 function updateCalculation() {
-    const outputBox = document.getElementById("zk-output");
-    const totalLabel = document.getElementById("zk-total-value");
+    if (!ZK_STATE.scenario) return;
 
-    if (!ZK_STATE.scenario || ZK_STATE.scenario === "") {
-        if(outputBox) outputBox.innerHTML = "";
-        if(totalLabel) totalLabel.textContent = "€ 0,00";
-        return;
-    }
-
-    console.log(`Berekening starten voor: ${ZK_STATE.scenario}`);
     const result = zkRunScenario(ZK_STATE.scenario, ZK_STATE);
-
     if (!result) return;
 
-    if (totalLabel) totalLabel.textContent = formatMoney(result.totals.user);
-    if (outputBox) renderResults(result, outputBox);
+    // Update Totaal Header
+    document.getElementById("zk-total-value").textContent = formatMoney(result.totals.user);
+
+    renderOutput(result);
 }
 
-function renderResults(result, container) {
-    const { scenario, steps, totals } = result;
+function renderOutput(result) {
+    const container = document.getElementById("zk-output");
+    const s = result.scenario;
 
+    // Bepaal Accuraatheid Class
+    const accClass = s.accuracy === "high" ? "acc-high" : "acc-low";
+
+    // 1. Intro kaart
     let html = `
-        <div class="zk-block">
-            <h4>${scenario.label}</h4>
-            <p>${scenario.description}</p>
-            <div class="zk-row" style="font-weight:bold; border-top:2px solid #eee; padding-top:10px;">
-                <span>Totaal eigen bijdrage:</span>
-                <span style="color:var(--red);">${formatMoney(totals.user)}</span>
+        <div class="zk-intro-card">
+            <span class="zk-accuracy-badge ${accClass}">Betrouwbaarheid: ${s.accuracy_text}</span>
+            <h3>${s.label}</h3>
+            <p>${s.description}</p>
+            
+            <div style="margin-top:15px; display:flex; justify-content:space-between; font-size:14px; border-top:1px solid #eee; padding-top:10px;">
+                <span>Totale zorgkosten:</span>
+                <strong>${formatMoney(result.totals.user + result.totals.ameli + result.totals.mutuelle)}</strong>
             </div>
-            <div class="zk-row" style="font-size:0.9em; color:#666;">
-                <span>Vergoed door Sécu (Ameli):</span>
-                <span>${formatMoney(totals.ameli)}</span>
+            <div style="display:flex; justify-content:space-between; color:var(--green); font-size:14px;">
+                <span>Vergoed (Ameli + Mutuelle):</span>
+                <strong>- ${formatMoney(result.totals.ameli + result.totals.mutuelle)}</strong>
             </div>
-            <div class="zk-row" style="font-size:0.9em; color:#666;">
-                <span>Vergoed door Mutuelle:</span>
-                <span>${formatMoney(totals.mutuelle)}</span>
+            <div style="display:flex; justify-content:space-between; color:var(--red); font-weight:bold; font-size:18px; margin-top:5px;">
+                <span>Uw bijdrage:</span>
+                <span>${formatMoney(result.totals.user)}</span>
             </div>
         </div>
     `;
 
-    steps.forEach((step, index) => {
-        const notesHtml = step.notes.length > 0 
-            ? `<div style="font-size:0.85em; color:#d32f2f; margin-top:4px;">Let op: ${step.notes.join(", ")}</div>` 
-            : "";
+    // 2. Stappen (Accordion)
+    result.steps.forEach((step, index) => {
+        // Icon logic
+        let icon = "";
+        if (step.notes.some(n => n.includes("100%"))) icon = `<img src="assets/check.svg" class="icon-img">`;
+        else if (step.cost_user > 50) icon = `<img src="assets/alert.svg" class="icon-img">`;
+        else if (step.label.toLowerCase().includes("operatie") || step.label.includes("SSR")) icon = `<img src="assets/hospital.svg" class="icon-img">`;
+
+        // Notes styling
+        const alerts = step.notes.map(n => `<div class="zk-warning"><img src="assets/alert.svg" style="width:16px"> ${n}</div>`).join("");
+        
+        // Tooltip injection
+        let niceLabel = injectTooltips(step.label, step.lex);
 
         html += `
-            <div class="zk-block" style="padding: 15px; margin-bottom: 15px;">
-                <h4 style="font-size:16px; margin-bottom:5px;">Stap ${index + 1}: ${step.label}</h4>
-                
-                <div class="zk-row">
-                    <span>Kosten (Bruto):</span>
-                    <span>${formatMoney(step.cost_user + step.cost_ameli + step.cost_mutuelle)}</span> 
+        <div class="zk-step" onclick="this.classList.toggle('open')">
+            <div class="zk-step-header">
+                <div class="zk-step-title">
+                    <span style="color:#9ca3af; font-size:12px;">${index+1}.</span>
+                    ${icon} ${niceLabel}
                 </div>
-                <div class="zk-row" style="color:#666; font-size:0.9em;">
-                    <span>- Ameli (Basis):</span>
-                    <span>${formatMoney(step.cost_ameli)}</span>
-                </div>
-                <div class="zk-row" style="color:#666; font-size:0.9em;">
-                    <span>- Mutuelle:</span>
-                    <span>${formatMoney(step.cost_mutuelle)}</span>
-                </div>
-                <div class="zk-row" style="font-weight:bold; color:var(--red);">
-                    <span>Jij betaalt:</span>
-                    <span>${formatMoney(step.cost_user)}</span>
-                </div>
-                ${notesHtml}
+                <div class="zk-step-cost">${formatMoney(step.cost_user)}</div>
             </div>
-        `;
+            
+            <div class="zk-step-body">
+                <div class="zk-row"><span>Totale kosten:</span> <strong>${formatMoney(step.cost_total)}</strong></div>
+                <div class="zk-row zk-subtext"><span>Vergoed Ameli:</span> <span>${formatMoney(step.cost_ameli)}</span></div>
+                <div class="zk-row zk-subtext"><span>Vergoed Mutuelle:</span> <span>${formatMoney(step.cost_mutuelle)}</span></div>
+                <hr style="border:0; border-top:1px dashed #eee; margin:10px 0;">
+                <div class="zk-row" style="color:var(--red); font-weight:bold;">
+                    <span>Zelf betalen:</span> <span>${formatMoney(step.cost_user)}</span>
+                </div>
+                ${alerts}
+            </div>
+        </div>`;
     });
 
     container.innerHTML = html;
+}
+
+// Helper: Zoek woorden uit lexicon en wrap ze in spans
+function injectTooltips(text, terms = []) {
+    if (!terms || terms.length === 0) return text;
+
+    let newText = text;
+    terms.forEach(term => {
+        const definition = LEXICON_DB[term];
+        if (definition) {
+            // Vervang alleen het woord als het bestaat
+            newText = newText.replace(term, `<span class="zk-term" data-tip="${definition}">${term}</span>`);
+        }
+    });
+    return newText;
 }
 
 function formatMoney(amount) {
     return "€ " + amount.toFixed(2).replace(".", ",");
 }
 
-// Start app direct
 initApp();
