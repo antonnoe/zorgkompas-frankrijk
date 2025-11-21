@@ -1,315 +1,220 @@
-/* ============================================
-   NLFR ZORGKOMPAS – HUISSTIJL
-   ============================================ */
+/* =======================================================================
+   ZORGKOMPAS — HUISSTIJL
+   ======================================================================= */
 
 :root {
-    --primary: #800000;
-    --primary-light: #f2e6e6;
-    --text: #333;
-    --text-light: #666;
-    --good: #27ae60;
-    --bad: #c0392b;
-    --neutral-dark: #2c3e50;
-    --border: #e0e0e0;
-    --bg-soft: #fafafa;
-    --radius: 8px;
-    --shadow: 0 2px 5px rgba(0,0,0,0.08);
-    --shadow-strong: 0 4px 12px rgba(0,0,0,0.15);
+    --main:#800000;
+    --main-light:#f5eaea;
+    --text:#222;
+    --soft:#666;
+    --bg:#fafafa;
+    --border:#ddd;
+    --shadow:0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* Base Styles */
 body {
-    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #fdfdfd;
-    color: var(--text);
-    line-height: 1.6;
+    margin:0;
+    padding:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
 }
 
-.fz-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
+
+/* =======================================================================
+   HEADER
+   ======================================================================= */
+
+.zk-header {
+    max-width:900px;
+    margin:0 auto;
+    padding:40px 20px 10px 20px;
 }
 
-h1, h2 {
-    color: var(--primary);
-    margin-top: 0;
+.zk-header h1 {
+    color:var(--main);
+    margin:0;
+    font-size:32px;
+    font-weight:bold;
 }
 
-.fz-main-title {
-    font-size: 32px;
-    margin-bottom: 10px;
+.zk-subtitle {
+    margin:4px 0 15px;
+    font-size:18px;
+    color:var(--soft);
 }
 
-.fz-intro {
-    font-size: 15px;
-    color: var(--text-light);
-    margin-bottom: 30px;
+.zk-disclaimer-short {
+    font-size:13px;
+    color:var(--soft);
+    border-left:3px solid var(--main);
+    padding-left:10px;
 }
 
-/* ============================================
+
+/* =======================================================================
    STICKY DASHBOARD
-   ============================================ */
+   ======================================================================= */
 
-.fz-dashboard-sticky {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: var(--neutral-dark);
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 4px solid var(--primary);
-    box-shadow: var(--shadow-strong);
+.zk-dashboard {
+    position:sticky;
+    top:0;
+    z-index:90;
+    background:#2c3e50;
+    color:white;
+    padding:15px 12px;
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:var(--shadow);
+    border-bottom:4px solid var(--main);
 }
 
-.fz-dash-title {
-    font-size: 12px;
-    text-transform: uppercase;
-    font-weight: bold;
-    color: #bdc3c7;
+.zk-dash-block {
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    font-size:13px;
 }
 
-.fz-dash-sub {
-    font-size: 13px;
-    color: #eee;
+.zk-dash-block select {
+    padding:6px;
+    border-radius:4px;
+    border:none;
 }
 
-.fz-dash-controls {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
+.zk-dash-block.checkbox {
+    flex-direction:row;
+    align-items:center;
 }
 
-.fz-dash-select {
-    padding: 7px 10px;
-    border-radius: 6px;
-    font-size: 14px;
-    border: none;
-    background: white;
-    color: var(--text);
-    font-weight: 600;
-    cursor: pointer;
+.zk-info {
+    display:inline-block;
+    width:14px;
+    height:14px;
+    background:url("assets/info.svg") no-repeat center;
+    background-size:contain;
+    cursor:pointer;
+    margin-left:4px;
 }
 
-.fz-checkbox-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    cursor: pointer;
+.zk-info:hover::after {
+    content:attr(data-tip);
+    position:absolute;
+    background:white;
+    color:black;
+    border:1px solid var(--border);
+    padding:6px 8px;
+    font-size:12px;
+    width:200px;
+    z-index:200;
 }
 
-/* ============================================
+.zk-dash-total {
+    padding:8px 12px;
+    background:white;
+    color:var(--text);
+    border-radius:6px;
+    min-width:180px;
+    text-align:center;
+}
+
+.zk-total-value {
+    font-size:20px;
+    font-weight:bold;
+    margin-top:4px;
+}
+
+.zk-total-alerts {
+    font-size:11px;
+    color:red;
+    margin-top:3px;
+}
+
+
+/* =======================================================================
    SECTIONS
-   ============================================ */
+   ======================================================================= */
 
-.fz-section {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin: 30px 0;
-    box-shadow: var(--shadow);
+.zk-section {
+    max-width:900px;
+    margin:25px auto;
+    padding:20px;
+    background:white;
+    border:1px solid var(--border);
+    border-radius:8px;
+    box-shadow:var(--shadow);
 }
 
-.fz-section-header {
-    background: var(--primary);
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.zk-section-title {
+    color:var(--main);
+    font-size:22px;
+    margin:0 0 10px;
 }
 
-.fz-step-num {
-    background: rgba(255,255,255,0.25);
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-weight: bold;
+.zk-section-text {
+    font-size:14px;
+    color:var(--soft);
+    margin-bottom:20px;
 }
 
-.fz-content {
-    padding: 20px;
+.zk-subblock {
+    margin:20px 0;
 }
 
-.fz-text-block {
-    border-left: 3px solid var(--border);
-    padding-left: 12px;
-    margin-bottom: 20px;
-    color: var(--text-light);
-    font-size: 14px;
+.zk-subnote {
+    font-size:12px;
+    color:var(--soft);
 }
 
-/* ============================================
-   BOX / INFO
-   ============================================ */
 
-.fz-box {
-    background: var(--primary-light);
-    border: 1px solid #d7c1c1;
-    border-radius: var(--radius);
-    padding: 15px;
-    font-size: 14px;
+/* =======================================================================
+   CARDS & SCENARIOS
+   ======================================================================= */
+
+.zk-card {
+    padding:15px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:var(--main-light);
+    margin:12px 0;
 }
 
-.fz-info {
-    font-size: 12px;
-    margin-top: 10px;
-    color: var(--text-light);
-    background: white;
-    padding: 6px 8px;
-    border-radius: 5px;
-    border: 1px solid var(--border);
+.zk-card-list {
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
 }
 
-/* ============================================
-   CALC MODULE
-   ============================================ */
-
-.fz-calc-module {
-    background: var(--primary-light);
-    border-radius: var(--radius);
-    padding: 20px;
-    border: 1px solid #dccaca;
-    box-shadow: inset 0 0 3px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
+.zk-card h5 {
+    margin:0 0 6px;
+    color:var(--main);
 }
 
-.fz-calc-title {
-    font-weight: bold;
-    margin-bottom: 12px;
-    font-size: 15px;
+.zk-card.scenario {
+    cursor:pointer;
+    transition:0.15s;
+    flex:1 1 calc(50% - 12px);
+    min-width:220px;
 }
 
-.fz-input-select {
-    padding: 8px 12px;
-    font-size: 14px;
-    width: 100%;
-    margin: 10px 0 20px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+.zk-card.scenario:hover {
+    background:white;
+    border-color:var(--main);
 }
 
-.fz-calc-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    margin-bottom: 7px;
-}
 
-.fz-calc-row.small {
-    font-size: 12px;
-    color: var(--text-light);
-}
+/* =======================================================================
+   FOOTER
+   ======================================================================= */
 
-.fz-calc-row.warn {
-    color: var(--bad);
-}
-
-.fz-calc-total {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #ccc;
-    font-weight: bold;
-    font-size: 16px;
-    color: var(--primary);
-    display: flex;
-    justify-content: space-between;
-}
-
-/* ============================================
-   HOSPITAL CHOICE BUTTONS
-   ============================================ */
-
-.fz-choice-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.fz-choice {
-    padding: 10px 14px;
-    border-radius: 6px;
-    border: 2px solid #ccc;
-    font-size: 14px;
-    cursor: pointer;
-    background: white;
-    transition: all 0.2s;
-}
-
-.fz-choice.active {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-}
-
-/* ============================================
-   DETAILS WINDOW
-   ============================================ */
-
-.fz-details {
-    font-family: monospace;
-    font-size: 12px;
-    background: white;
-    border: 1px solid var(--border);
-    padding: 10px;
-    border-radius: 6px;
-    display: none;
-    margin-top: 10px;
-}
-
-.fz-details.open {
-    display: block;
-}
-
-.fz-detail-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 3px 0;
-    border-bottom: 1px dashed #ddd;
-}
-
-/* ============================================
-   TOGGLE BUTTONS
-   ============================================ */
-
-.fz-toggle-btn {
-    margin-top: 10px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--primary);
-    background: transparent;
-    color: var(--primary);
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.fz-toggle-btn:hover {
-    background: var(--primary);
-    color: white;
-}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-
-@media (max-width: 700px) {
-    .fz-dashboard-sticky {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .fz-choice-row {
-        flex-direction: column;
-    }
+.zk-footer {
+    max-width:900px;
+    margin:40px auto;
+    padding:20px;
+    font-size:14px;
+    color:var(--soft);
 }
