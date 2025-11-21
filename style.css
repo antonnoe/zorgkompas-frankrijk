@@ -1,20 +1,21 @@
 :root {
-    --red: #b91c1c;
-    --red-light: #fef2f2;
+    /* JOUW HUISSTIJL */
+    --brand: #800000;       /* Bordeaux */
+    --brand-light: #f4e9e9; /* Zeer licht rood achtergrond */
+    --brand-dark: #5c0000;  
+    
+    /* Functionele kleuren */
     --green: #15803d;
     --green-light: #f0fdf4;
-    --blue: #1d4ed8;
-    --blue-light: #eff6ff;
-    --gray: #f3f4f6;
     --text: #1f2937;
-    --border: #e5e7eb;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --border: #dcdcdc;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
 }
 
 body {
     margin: 0;
     font-family: "Inter", sans-serif;
-    background: #f9fafb;
+    background: #fafafa;
     color: var(--text);
     line-height: 1.6;
 }
@@ -22,13 +23,13 @@ body {
 /* HEADER */
 #zk-header {
     background: white;
-    border-bottom: 4px solid var(--blue);
+    border-bottom: 4px solid var(--brand); /* Rood randje */
     padding: 30px 20px;
     text-align: center;
     box-shadow: var(--shadow);
 }
-#zk-header h1 { margin: 0; color: var(--blue); font-size: 28px; }
-#zk-header h2 { margin: 5px 0 0; font-weight: 400; font-size: 16px; color: #6b7280; }
+#zk-header h1 { margin: 0; color: var(--brand); font-size: 28px; }
+#zk-header h2 { margin: 5px 0 0; font-weight: 400; font-size: 16px; color: #666; }
 
 /* DASHBOARD */
 #zk-dashboard {
@@ -47,25 +48,25 @@ body {
 }
 
 .zk-dash-block { display: flex; flex-direction: column; gap: 4px; min-width: 200px; }
-.zk-dash-block label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: #6b7280; }
+.zk-dash-block label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: #666; }
 .zk-dash-block select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; }
 
 .zk-opt-row { display: flex; gap: 15px; font-size: 14px; align-items: center; }
-.zk-opt-row input { accent-color: var(--blue); transform: scale(1.1); }
+.zk-opt-row input { accent-color: var(--brand); transform: scale(1.1); }
 
-/* TOTAL BOX */
+/* TOTAL BOX (In huisstijl rood) */
 #zk-total {
     margin-left: auto;
-    background: var(--blue-light);
+    background: var(--brand-light);
     padding: 10px 20px;
     border-radius: 8px;
-    border: 1px solid #bfdbfe;
+    border-left: 5px solid var(--brand);
     text-align: right;
     min-width: 180px;
 }
-.zk-total-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--blue); }
-.zk-total-value { font-size: 24px; font-weight: 700; color: var(--blue); }
-.zk-total-note { font-size: 10px; color: #6b7280; }
+.zk-total-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brand); }
+.zk-total-value { font-size: 24px; font-weight: 700; color: var(--brand); }
+.zk-total-note { font-size: 10px; color: var(--brand-dark); }
 
 /* SCENARIO SELECTOR */
 #zk-scenario-panel { max-width: 800px; margin: 30px auto; padding: 0 20px; text-align: center; }
@@ -74,25 +75,39 @@ body {
 /* OUTPUT CONTAINER */
 #zk-detail-container { max-width: 800px; margin: 0 auto 60px; padding: 0 20px; }
 
-/* RESULT BLOCKS */
+/* INTRO CARD & ACCURACY METER */
 .zk-intro-card {
     background: white;
     padding: 25px;
     border-radius: 10px;
     box-shadow: var(--shadow);
     margin-bottom: 30px;
-    border-left: 5px solid var(--blue);
+    border-top: 4px solid var(--brand);
 }
-.zk-accuracy-badge {
-    display: inline-block;
-    padding: 4px 8px;
+
+.zk-accuracy-container {
+    background: #f3f4f6;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+.zk-accuracy-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 600; }
+.zk-accuracy-bar-bg {
+    height: 8px;
+    background: #e5e7eb;
     border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 10px;
+    overflow: hidden;
 }
-.acc-high { background: var(--green-light); color: var(--green); border: 1px solid var(--green); }
-.acc-low { background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; }
+.zk-accuracy-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease-in-out;
+}
+/* Kleuren voor de bar */
+.fill-high { background: #15803d; } /* Groen */
+.fill-mid { background: #d97706; }  /* Oranje */
+.fill-low { background: #dc2626; }  /* Rood */
 
 /* ACCORDION STEPS */
 .zk-step {
@@ -111,54 +126,75 @@ body {
     cursor: pointer;
     background: white;
 }
-.zk-step-header:hover { background: #f9fafb; }
+.zk-step-header:hover { background: #fcfcfc; border-color: #999; }
 .zk-step-title { font-weight: 600; display: flex; align-items: center; gap: 10px; }
-.zk-step-cost { font-weight: 700; color: var(--red); }
+.zk-step-cost { font-weight: 700; color: var(--brand); }
 
 .zk-step-body {
-    display: none; /* Hidden by default */
+    display: none;
     padding: 15px;
     background: #fafafa;
     border-top: 1px solid var(--border);
     font-size: 14px;
 }
 .zk-step.open .zk-step-body { display: block; }
-.zk-step.open .zk-step-header { background: #f3f4f6; }
+.zk-step.open .zk-step-header { background: var(--brand-light); }
 
 .zk-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-.zk-subtext { color: #6b7280; font-size: 13px; }
+.zk-subtext { color: #666; font-size: 13px; }
 .zk-warning {
     display: flex; align-items: center; gap: 8px;
-    background: var(--red-light); color: var(--red);
+    background: #fee2e2; color: #991b1b;
     padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px;
 }
 
-/* LEXICON TOOLTIP */
-.zk-term {
-    border-bottom: 1px dashed #666;
+/* TOOLTIP (MET SVG) */
+.zk-info-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-left: 4px;
     cursor: help;
-    position: relative;
-    color: var(--blue);
+    opacity: 0.6;
+    transition: opacity 0.2s;
 }
-.zk-term:hover::after {
+.zk-info-icon:hover { opacity: 1.0; }
+
+/* De pop-up logic */
+.zk-tooltip-wrapper { position: relative; display: inline-flex; align-items: center; }
+.zk-tooltip-wrapper:hover::after {
     content: attr(data-tip);
     position: absolute;
-    bottom: 125%;
+    bottom: 135%;
     left: 50%;
     transform: translateX(-50%);
     background: #333;
     color: white;
-    padding: 8px 12px;
+    padding: 10px 15px;
     border-radius: 6px;
     font-size: 12px;
-    width: 200px;
+    width: 220px;
     z-index: 1000;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     line-height: 1.4;
+    text-align: center;
+    pointer-events: none;
+}
+/* Pijltje onder tooltip */
+.zk-tooltip-wrapper:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 85%; /* Net onder de textballon */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+    z-index: 1000;
 }
 
 /* FOOTER */
-#zk-footer { text-align: center; font-size: 12px; color: #9ca3af; padding: 40px 0; }
+#zk-footer { text-align: center; font-size: 12px; color: #999; padding: 40px 0; }
 
-/* ICONS */
+/* Icons in accordion */
 .icon-img { width: 20px; height: 20px; vertical-align: middle; }
