@@ -1,218 +1,198 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zorgkompas Frankrijk — Dashboard</title>
-
-    <!-- 🔥 CRUCIALE FIX: CSS wordt nu WEL geladen -->
-    <link rel="stylesheet" href="/style.css?v=3">
+    <meta charset="utf-8">
+    <title>Zorgkompas Frankrijk</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- ============================= -->
-<!--   FLOATING DASHBOARD (TOP)   -->
-<!-- ============================= -->
+<!-- ======================== DASHBOARD ======================== -->
 <div id="zk-dashboard">
+    <select id="zk-profiel">
+        <option value="worker">A. Werkende / ZZP (URSSAF)</option>
+        <option value="pension">B. Gepensioneerde (S1 / CAK)</option>
+        <option value="resident">C. Inwoner (PUMa / CSM)</option>
+    </select>
 
-    <div class="zk-dash-group">
-        <label for="zk-profiel">Uw Profiel</label>
-        <select id="zk-profiel">
-            <option value="worker">Werkende / Ondernemer (URSSAF)</option>
-            <option value="pensioner">Gepensioneerde (S1 / CAK)</option>
-            <option value="resident">Inwoner (PUMa / CSM)</option>
-        </select>
-    </div>
+    <select id="zk-mutuelle">
+        <option value="0">Geen Mutuelle</option>
+        <option value="1">100%</option>
+        <option value="2">200%</option>
+        <option value="3">300%</option>
+        <option value="4" selected>400%</option>
+    </select>
 
-    <div class="zk-dash-group">
-        <label for="zk-mutuelle">Mutuelle</label>
-        <select id="zk-mutuelle">
-            <option value="0">Geen mutuelle</option>
-            <option value="1">100%</option>
-            <option value="1.5">150%</option>
-            <option value="2" selected>200%</option>
-            <option value="3">300%</option>
-            <option value="4">400%</option>
-        </select>
-    </div>
+    <label class="zk-check">
+        <input type="checkbox" id="zk-ald">
+        <span>ALD</span>
+    </label>
 
-    <div class="zk-dash-group checkbox">
-        <label><input type="checkbox" id="zk-ald"> ALD (100% BRSS voor ALD-zorg)</label>
-    </div>
-
-    <div class="zk-dash-group checkbox">
-        <label><input type="checkbox" id="zk-traitant" checked> Médecin Traitant geregistreerd</label>
-    </div>
+    <label class="zk-check">
+        <input type="checkbox" id="zk-traitant" checked>
+        <span>Médecin Traitant</span>
+    </label>
 
     <div id="zk-total-box">
         <div id="zk-total-label">U betaalt (indicatie):</div>
         <div id="zk-total-value">€ 0,00</div>
         <div id="zk-total-warnings"></div>
     </div>
-
 </div>
 
 
+<!-- ======================== CONTENT ======================== -->
+<div class="zk-section">
+    <div class="zk-h2">1. De Poort: Instroom</div>
 
-<!-- ========================================= -->
-<!--          GRID MET ZORGSCENARIO'S         -->
-<!-- ========================================= -->
-
-<div id="zk-grid">
-
-    <!-- ===== Column 1: Consulten ===== -->
-    <div class="zk-column">
-        <h2>Consult & Specialist</h2>
-
-        <div class="zk-card" data-scenario="gp_s1">
-            <h3>Huisarts S1</h3>
-            <p>Consult zonder supplement</p>
-        </div>
-
-        <div class="zk-card" data-scenario="gp_s2">
-            <h3>Huisarts S2</h3>
-            <p>Met supplementen</p>
-        </div>
-
-        <div class="zk-card" data-scenario="spec_s1">
-            <h3>Specialist S1</h3>
-            <p>Cardio, longarts, etc.</p>
-        </div>
-
-        <div class="zk-card" data-scenario="spec_s2">
-            <h3>Specialist S2</h3>
-            <p>Hoog supplement</p>
-        </div>
-
-        <div class="zk-card" data-scenario="spec_out">
-            <h3>Buiten Parcours</h3>
-            <p>Zonder doorverwijzing</p>
-        </div>
+    <div class="zk-card" data-scenario="instroom">
+        <h3>Instroomproblemen</h3>
+        <p>CPAM, URSSAF, S1-verwerking</p>
     </div>
-
-
-
-    <!-- ===== Column 2: Paramedisch ===== -->
-    <div class="zk-column">
-        <h2>Paramedische Zorg</h2>
-
-        <div class="zk-card" data-scenario="kine_20">
-            <h3>Kiné</h3>
-            <p>20 sessies</p>
-        </div>
-
-        <div class="zk-card" data-scenario="med_ald">
-            <h3>Medicijnen 100% (ALD)</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="med_65">
-            <h3>Medicijnen 65%</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="med_30">
-            <h3>Medicijnen 30%</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="med_15">
-            <h3>Medicijnen 15%</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="med_diab">
-            <h3>Diabetespakket</h3>
-            <p>Insuline, materialen</p>
-        </div>
-    </div>
-
-
-
-    <!-- ===== Column 3: Diagnostiek ===== -->
-    <div class="zk-column">
-        <h2>Diagnostiek</h2>
-
-        <div class="zk-card" data-scenario="diag_xray">
-            <h3>Röntgen</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="diag_echo">
-            <h3>Echo</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="diag_mri">
-            <h3>MRI</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="diag_biopsy">
-            <h3>Biopsie</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="diag_ctpet">
-            <h3>CT / PET</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="diag_onco">
-            <h3>Oncologie Diagnostiek</h3>
-        </div>
-    </div>
-
-
-
-    <!-- ===== Column 4: Ziekenhuis ===== -->
-    <div class="zk-column">
-        <h2>Ziekenhuis & Operaties</h2>
-
-        <div class="zk-card" data-scenario="hosp_public">
-            <h3>Publiek Ziekenhuis</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="hosp_private">
-            <h3>Privékliniek</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="hosp_hip">
-            <h3>Heupoperatie</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="hosp_hernia">
-            <h3>Hernia-operatie</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="hosp_onco_op">
-            <h3>Onco-operatie</h3>
-        </div>
-    </div>
-
-
-
-    <!-- ===== Column 5: Revalidatie ===== -->
-    <div class="zk-column">
-        <h2>Revalidatie (SSR)</h2>
-
-        <div class="zk-card" data-scenario="ssr_21">
-            <h3>SSR — 21 dagen (publiek)</h3>
-        </div>
-
-        <div class="zk-card" data-scenario="ssr_30">
-            <h3>SSR — 30 dagen (privé)</h3>
-        </div>
-    </div>
-
 </div>
 
 
+<div class="zk-section">
+    <div class="zk-h2">2. Consult & Specialist</div>
 
-<!-- ========================================= -->
-<!--      DETAILPANELS (1 per scenario)       -->
-<!-- ========================================= -->
+    <div class="zk-card" data-scenario="huisarts_s1">
+        <h3>Huisarts S1</h3>
+        <p>Consult zonder supplement</p>
+    </div>
 
-<div id="zk-detail-container">
-    <!-- JS vult dit dynamisch -->
+    <div class="zk-card" data-scenario="huisarts_s2">
+        <h3>Huisarts S2</h3>
+        <p>Met supplementen</p>
+    </div>
+
+    <div class="zk-card" data-scenario="spec_s1">
+        <h3>Specialist S1</h3>
+        <p>Cardio, longarts, etc.</p>
+    </div>
+
+    <div class="zk-card" data-scenario="spec_s2">
+        <h3>Specialist S2</h3>
+        <p>Hoog supplement</p>
+    </div>
+
+    <div class="zk-card" data-scenario="buiten_parcours">
+        <h3>Buiten Parcours</h3>
+        <p>Zonder doorverwijzing</p>
+    </div>
 </div>
 
-<!-- ============================= -->
-<!-- SCRIPT -->
-<!-- ============================= -->
-<script src="/script.js?v=3"></script>
 
+<div class="zk-section">
+    <div class="zk-h2">3. Paramedische Zorg</div>
+
+    <div class="zk-card" data-scenario="kine">
+        <h3>Kiné</h3>
+        <p>20 sessies</p>
+    </div>
+
+    <div class="zk-card" data-scenario="med_100">
+        <h3>Medicijnen 100% (ALD)</h3>
+        <p>Chronische middelen</p>
+    </div>
+
+    <div class="zk-card" data-scenario="med_65">
+        <h3>Medicijnen 65%</h3>
+        <p>Standaard categorie</p>
+    </div>
+
+    <div class="zk-card" data-scenario="med_30">
+        <h3>Medicijnen 30%</h3>
+        <p>Lichte middelen</p>
+    </div>
+
+    <div class="zk-card" data-scenario="med_15">
+        <h3>Medicijnen 15%</h3>
+        <p>Weinig vergoed</p>
+    </div>
+
+    <div class="zk-card" data-scenario="diabetes">
+        <h3>Diabetespakket</h3>
+        <p>Insuline, strips, materialen</p>
+    </div>
+</div>
+
+
+<div class="zk-section">
+    <div class="zk-h2">4. Diagnostiek</div>
+
+    <div class="zk-card" data-scenario="xray">
+        <h3>Röntgen</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="echo">
+        <h3>Echo</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="mri">
+        <h3>MRI</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="biopsie">
+        <h3>Biopsie</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="ctpet">
+        <h3>CT / PET</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="onco_diag">
+        <h3>Oncologie Diagnostiek</h3>
+    </div>
+</div>
+
+
+<div class="zk-section">
+    <div class="zk-h2">5. Ziekenhuis & Operatie</div>
+
+    <div class="zk-card" data-scenario="hosp_pub">
+        <h3>Publiek Ziekenhuis</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="hosp_priv">
+        <h3>Privékliniek (Secteur 2)</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="op_heup">
+        <h3>Heupoperatie</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="op_hernia">
+        <h3>Hernia-operatie</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="op_onco">
+        <h3>Onco-operatie</h3>
+    </div>
+</div>
+
+
+<div class="zk-section">
+    <div class="zk-h2">6. Revalidatie (SSR)</div>
+
+    <div class="zk-card" data-scenario="ssr_pub">
+        <h3>SSR Publiek (21 dagen)</h3>
+    </div>
+
+    <div class="zk-card" data-scenario="ssr_priv">
+        <h3>SSR Privé (30 dagen)</h3>
+    </div>
+</div>
+
+
+<!-- ======================== MODAL ======================== -->
+<div id="zk-modal">
+    <div id="zk-modal-content">
+        <span id="zk-close">&times;</span>
+        <div id="zk-modal-body"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
