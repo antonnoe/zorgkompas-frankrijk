@@ -1,28 +1,28 @@
 /* ============================================================
-   ZORGKOMPAS CONTROLLER - VOLLEDIGE VERSIE
+   ZORGKOMPAS CONTROLLER
    ============================================================ */
 
 import { ZK_SCENARIOS } from "./scenarios.js";
 import { zkRunScenario } from "./scenarioEngine.js";
 
 // ------------------------------------------------------------
-// 1. LEXICON DATABASE (De tekst voor de pop-ups)
+// 1. LEXICON DATABASE
 // ------------------------------------------------------------
 const LEXICON_DB = {
-    "BRSS": "Basis de Remboursement: Het wettelijk vastgestelde basistarief. De Sécu vergoedt een % van DIT bedrag, niet van de werkelijke kosten.",
+    "BRSS": "Basis de Remboursement: Het wettelijk basistarief. De Sécu vergoedt een % van dit bedrag.",
     "Secteur 1": "Arts houdt zich strikt aan de overheidstarieven. Geen supplementen.",
-    "Secteur 2": "Arts mag zelf tarieven bepalen (Vrije prijzen). U betaalt het supplement zelf (of uw mutuelle).",
+    "Secteur 2": "Arts mag zelf tarieven bepalen. U betaalt het supplement zelf.",
     "OPTAM": "Arts met gematigde tarieven. Betere vergoeding dan 'puur' Secteur 2.",
-    "ALD": "Affection Longue Durée: Chronische ziekte (o.a. kanker, diabetes). 100% vergoeding van de basis (BRSS).",
-    "Franchise": "Eigen risico per handeling (bijv. €2 per artsbezoek). Dit wordt NOOIT vergoed, ook niet door de mutuelle.",
-    "Vignette": "Kleurcode op medicijnverpakking die bepaalt hoeveel de Sécu vergoedt (65%, 30%, 15%).",
-    "Forfait Journalier": "Verplichte dagbijdrage voor kost & inwoning bij opname (€20/dag).",
-    "Parcours de soins": "Zorgtraject. Altijd eerst naar huisarts voor verwijzing, anders krijgt u minder vergoed.",
-    "Dépassements": "Ereloonsupplementen: Het bedrag dat de arts vraagt bovenop het officiële tarief.",
-    "Auxiliaire médical": "Paramedici zoals fysiotherapeuten en verpleegkundigen.",
-    "SSR": "Revalidatiekliniek. Verblijfskosten zijn vaak voor eigen rekening als u geen goede mutuelle heeft.",
-    "Derde betaler": "Tiers Payant: U hoeft het bedrag niet voor te schieten, de verzekering betaalt direct aan de zorgverlener.",
-    "Forfait Technique": "Vast bedrag voor het gebruik van zware apparatuur (zoals MRI), direct betaald door de Sécu."
+    "ALD": "Affection Longue Durée: Chronische ziekte. 100% vergoeding van de basis.",
+    "Franchise": "Eigen risico per handeling (bijv. €2). Wordt nooit vergoed.",
+    "Vignette": "Kleurcode op medicijnen die vergoeding bepaalt (65%, 30%, 15%).",
+    "Forfait Journalier": "Verplichte dagbijdrage bij opname (€20/dag).",
+    "Parcours de soins": "Zorgtraject. Altijd eerst naar huisarts voor verwijzing.",
+    "Dépassements": "Ereloonsupplementen bovenop het basistarief.",
+    "Auxiliaire médical": "Paramedici zoals fysiotherapeuten.",
+    "SSR": "Revalidatiekliniek (Soins de Suite et de Réadaptation).",
+    "Derde betaler": "Tiers Payant: Verzekering betaalt direct aan zorgverlener.",
+    "Forfait Technique": "Vast bedrag voor zware apparatuur (MRI/CT), betaald door Sécu."
 };
 
 // ------------------------------------------------------------
@@ -38,12 +38,11 @@ const ZK_STATE = {
 };
 
 // ------------------------------------------------------------
-// 3. INITIALISATIE
+// 3. INIT
 // ------------------------------------------------------------
 function initApp() {
     const select = document.getElementById("zk-scenario-select");
     
-    // Vul de dropdown met scenario's
     ZK_SCENARIOS.forEach(s => {
         const opt = document.createElement("option");
         opt.value = s.id;
@@ -55,14 +54,12 @@ function initApp() {
 }
 
 function attachListeners() {
-    // Luister naar wijzigingen in de inputs
-    const ids = ["zk-status", "zk-mutuelle", "zk-opt-ald", "zk-opt-traitant", "zk-opt-private"];
+    const ids = ["zk-mutuelle", "zk-opt-ald", "zk-opt-traitant", "zk-opt-private"];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.addEventListener("change", updateState);
     });
 
-    // Luister naar scenario keuze
     const select = document.getElementById("zk-scenario-select");
     if(select) {
         select.addEventListener("change", (e) => {
@@ -74,58 +71,35 @@ function attachListeners() {
 
 function updateState(e) {
     const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    // Haal 'zk-' en 'opt-' weg om de key te vinden (bv zk-opt-ald -> ald)
     const key = e.target.id.replace("zk-opt-", "").replace("zk-", "");
     
-    if(key === "status") ZK_STATE.status = val;
-    else if(key === "mutuelle") ZK_STATE.mutuelle = Number(val);
+    if(key === "mutuelle") ZK_STATE.mutuelle = Number(val);
     else ZK_STATE[key] = val;
 
     updateCalculation();
 }
 
 // ------------------------------------------------------------
-// 4. BEREKENING & UPDATE
+// 4. BEREKENING & RENDER
 // ------------------------------------------------------------
 function updateCalculation() {
     if (!ZK_STATE.scenario) return;
 
-    // Roep de Engine aan
     const result = zkRunScenario(ZK_STATE.scenario, ZK_STATE);
     if (!result) return;
 
-    // Update het totaalbedrag rechtsboven
     document.getElementById("zk-total-value").textContent = formatMoney(result.totals.user);
-
-    // Render de details
     renderOutput(result);
 }
 
-// ------------------------------------------------------------
-// 5. RENDERING (HTML GENERATOR)
-// ------------------------------------------------------------
 function renderOutput(result) {
     const container = document.getElementById("zk-output");
     const s = result.scenario;
 
-    // Bepaal kleur van de accuraatheid-balk
-    let fillClass = "fill-mid";
-    if (s.accuracy_pct >= 80) fillClass = "fill-high";
-    if (s.accuracy_pct <= 40) fillClass = "fill-low";
-
-    // --- DEEL 1: INTRO CARD ---
     let html = `
         <div class="zk-intro-card">
-            
-            <div class="zk-accuracy-container">
-                <div class="zk-accuracy-header">
-                    <span>Financiële voorspelbaarheid:</span>
-                    <span>${s.accuracy_pct}%</span>
-                </div>
-                <div class="zk-accuracy-bar-bg">
-                    <div class="zk-accuracy-bar-fill ${fillClass}" style="width: ${s.accuracy_pct}%"></div>
-                </div>
-                <div style="margin-top:5px; color:#666;">${s.accuracy_text}</div>
+            <div style="background:#f3f4f6; padding:8px 12px; border-radius:6px; font-size:13px; font-weight:600; color:#555; margin-bottom:15px; border-left:4px solid #999;">
+                ${s.accuracy_text}
             </div>
 
             <h3>${s.label}</h3>
@@ -138,10 +112,7 @@ function renderOutput(result) {
         </div>
     `;
 
-    // --- DEEL 2: STAPPEN (LOOP) ---
     result.steps.forEach((step, index) => {
-        
-        // Icon logic: welk plaatje tonen we bij de titel?
         let icon = "";
         if (step.notes.some(n => n.includes("100%"))) {
             icon = `<img src="assets/check.svg" class="icon-img" alt="OK">`;
@@ -151,10 +122,8 @@ function renderOutput(result) {
             icon = `<img src="assets/hospital.svg" class="icon-img" alt="Zorg">`;
         }
 
-        // Tooltip injection: Zoek woorden en zet er een [i] achter
         let niceLabel = injectTooltips(step.label, step.lex);
 
-        // Warning blocks genereren
         const warnings = step.notes.map(n => 
             `<div class="zk-warning"><img src="assets/alert.svg" style="width:16px"> ${n}</div>`
         ).join("");
@@ -186,25 +155,17 @@ function renderOutput(result) {
     container.innerHTML = html;
 }
 
-// ------------------------------------------------------------
-// 6. HELPER FUNCTIES
-// ------------------------------------------------------------
-
-// Zoekt termen in de tekst en voegt de [i] tooltip toe
 function injectTooltips(text, terms = []) {
     if (!terms || terms.length === 0) return text;
 
     let newText = text;
     terms.forEach(term => {
         const definition = LEXICON_DB[term];
-        if (definition) {
-            // HTML voor de tooltip met het info.svg icoontje
+        if (definition && newText.includes(term)) {
             const replacement = `
                 <span class="zk-tooltip-wrapper" data-tip="${definition}">
                     ${term}<img src="assets/info.svg" class="zk-info-icon" alt="[i]">
                 </span>`;
-            
-            // Vervang de term in de tekst
             newText = newText.replace(term, replacement);
         }
     });
@@ -215,7 +176,4 @@ function formatMoney(amount) {
     return "€ " + amount.toFixed(2).replace(".", ",");
 }
 
-// ------------------------------------------------------------
-// 7. START DE APP
-// ------------------------------------------------------------
 initApp();
