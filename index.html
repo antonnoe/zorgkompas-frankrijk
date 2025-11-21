@@ -2,181 +2,120 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Zorgkompas Frankrijk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zorgkompas Frankrijk – Simulator</title>
 <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<!-- DASHBOARD -->
-<div class="fz-dashboard-sticky">
-    <div>
-        <div class="fz-dash-title">Jouw Zorgprofiel</div>
-        <div style="font-size:14px;">Instellingen gelden voor alle fases</div>
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+<header id="zk-header">
+    <h1>Zorgkompas Frankrijk</h1>
+    <h2>Educatieve simulator voor het Franse zorgstelsel</h2>
+</header>
+
+
+<!-- ========================================================= -->
+<!-- FLOATING DASHBOARD (STATUS VERZEKERDE) -->
+<!-- ========================================================= -->
+<div id="zk-dashboard">
+
+    <!-- STATUS VERZEKERDE -->
+    <div class="zk-dash-group">
+        <label>Status verzekerde</label>
+        <select id="profile-status">
+            <option value="worker">A. Werkende / Ondernemer (URSSAF)</option>
+            <option value="pensioner">B. Gepensioneerd (S1 / Verdragsgerechtigd)</option>
+            <option value="resident">C. Inwoner (PUMa / CSM)</option>
+        </select>
     </div>
 
-    <div class="fz-dash-controls">
-
-        <select id="profile-status" class="fz-dash-select" onchange="updateSystem()">
-            <option value="worker">A. Werkende / ZZP</option>
-            <option value="pensioner">B. Gepensioneerd (S1)</option>
-            <option value="resident">C. Inwoner (PUMa/CSM)</option>
-        </select>
-
-        <select id="profile-mutuelle" class="fz-dash-select" onchange="updateSystem()">
-            <option value="0">Geen Mutuelle</option>
+    <!-- MUTUELLE -->
+    <div class="zk-dash-group">
+        <label>Mutuelle</label>
+        <select id="profile-mutuelle">
+            <option value="0">Geen mutuelle</option>
             <option value="1">100%</option>
             <option value="2" selected>200%</option>
             <option value="3">300%</option>
             <option value="4">400%</option>
         </select>
-
-        <label class="fz-checkbox-wrapper">
-            <input type="checkbox" id="profile-ald" onchange="updateSystem()">
-            <span>ALD</span>
-        </label>
-
-        <label class="fz-checkbox-wrapper">
-            <input type="checkbox" id="setting-traitant" checked onchange="updateSystem()">
-            <span>Médecin Traitant</span>
-        </label>
     </div>
+
+    <!-- ALD -->
+    <div class="zk-dash-group checkbox">
+        <input type="checkbox" id="profile-ald">
+        <label for="profile-ald">ALD (100% BRSS)</label>
+    </div>
+
+    <!-- MÉDECIN TRAITANT -->
+    <div class="zk-dash-group checkbox">
+        <input type="checkbox" id="profile-traitant" checked>
+        <label for="profile-traitant">Médecin traitant</label>
+    </div>
+
+    <!-- PRIVÉ VS PUBLIEK -->
+    <div class="zk-dash-group checkbox">
+        <input type="checkbox" id="profile-private">
+        <label for="profile-private">Privé zorgpad</label>
+    </div>
+
+
+    <!-- TOTAAL -->
+    <div id="zk-total-box">
+        <div id="zk-total-label">U betaalt (indicatie):</div>
+        <div id="zk-total-value">€ 0,00</div>
+        <div id="zk-total-warnings"></div>
+    </div>
+
 </div>
 
 
-<div style="padding:20px;">
-<h1 style="color:#800000;margin-top:0;">Het Franse Zorgkompas</h1>
-<p>Doorloop de fases en zie direct wat er financieel gebeurt.</p>
 
-<!-- ===== FASE 1 ===== -->
-<div class="fz-section">
-    <div class="fz-section-header">
-        <div class="fz-step-num">1</div>
-        <h2 class="fz-section-title">Instroom & Administratie</h2>
-    </div>
+<!-- ========================================================= -->
+<!-- SCENARIO SELECTIE -->
+<!-- ========================================================= -->
+<section id="zk-scenario-section">
+    <h2>Kies uw zorgvraag / ziektebeeld</h2>
 
-    <div class="fz-content">
-        <div class="fz-text-block">
-            <strong id="txt-entry-title">...</strong><br>
-            <span id="txt-entry-desc">...</span>
-        </div>
+    <select id="zk-scenario-select">
+        <option value="">-- Kies een scenario --</option>
+        <!-- Wordt dynamisch gevuld door script.js -->
+    </select>
+</section>
 
-        <div class="fz-calc-module">
-            <strong>Cruciale actie: huisarts-registratie</strong><br>
-            Geen médecin traitant = 30% vergoeding i.p.v. 70%.
-        </div>
-    </div>
-</div>
 
-<!-- ===== FASE 2 ===== -->
-<div class="fz-section">
-    <div class="fz-section-header">
-        <div class="fz-step-num">2</div>
-        <h2 class="fz-section-title">Huisarts & Specialist</h2>
-    </div>
 
-    <div class="fz-content">
-        <div class="fz-text-block">
-            Huisarts (S1/S2) en Specialisten. Secteur 2 rekent supplementen.
-        </div>
+<!-- ========================================================= -->
+<!-- DETAIL RENDERCONTAINER -->
+<!-- ========================================================= -->
+<section id="zk-detail-container">
+    <!-- Scenario-resultaat komt hier -->
+</section>
 
-        <div class="fz-calc-module">
-            <div style="margin-bottom:15px;font-weight:bold;">Scenario: Consult / Specialist</div>
 
-            <select id="input-f2-cost" class="fz-dash-select" onchange="updateSystem()">
-                <option value="30">Huisarts S1 (€30)</option>
-                <option value="50" selected>Specialist S2 (€50)</option>
-                <option value="80">Specialist Parijs (€80)</option>
-            </select>
 
-            <div class="fz-calc-row"><span>Ameli:</span><span id="res-f2-ameli">€ 0,00</span></div>
-            <div class="fz-calc-row"><span>Mutuelle:</span><span id="res-f2-mut">€ 0,00</span></div>
-            <div class="fz-calc-row"><span>Forfait:</span><span>- € 1,00</span></div>
+<!-- ========================================================= -->
+<!-- DISCLAIMER -->
+<!-- ========================================================= -->
+<footer id="zk-footer">
+    <p><strong>Disclaimer:</strong> Het Zorgkompas Frankrijk is een educatieve simulator. 
+    Alle bedragen zijn indicatief en gebaseerd op BRSS-tarieven, voorbeeldbedragen en 
+    generieke zorgpaden. Raadpleeg Ameli.fr, uw CPAM, het CAK, URSSAF of uw zorgverzekeraar
+    voor officiële informatie.</p>
+</footer>
 
-            <div class="fz-calc-total">
-                <div class="fz-calc-row"><span>Jij betaalt:</span><span id="res-f2-user">€ 0,00</span></div>
-            </div>
 
-            <button class="fz-toggle-btn" onclick="toggleDetails('det-f2')">Toon berekening</button>
-            <div id="det-f2" class="fz-details"></div>
-        </div>
-    </div>
-</div>
 
-<!-- ===== FASE 3 ===== -->
-<div class="fz-section">
-    <div class="fz-section-header">
-        <div class="fz-step-num">3</div>
-        <h2 class="fz-section-title">Fysio & Medicijnen</h2>
-    </div>
-
-    <div class="fz-content">
-
-        <div class="fz-calc-module">
-            <div style="margin-bottom:10px;font-weight:bold;">Kiné 20 sessies</div>
-            <div class="fz-calc-row"><span>Ameli:</span><span id="res-f3-ameli">€ 0,00</span></div>
-            <div class="fz-calc-row"><span>Mutuelle:</span><span id="res-f3-mut">€ 0,00</span></div>
-
-            <div class="fz-calc-total">
-                <div class="fz-calc-row"><span>Jij betaalt:</span><span id="res-f3-user">€ 0,00</span></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ===== FASE 4 ===== -->
-<div class="fz-section">
-    <div class="fz-section-header">
-        <div class="fz-step-num">4</div>
-        <h2 class="fz-section-title">Ziekenhuis</h2>
-    </div>
-
-    <div class="fz-content">
-        <div class="fz-text-block">
-            Publiek = weinig risico. Privé = forse supplementen.
-        </div>
-
-        <div style="display:flex;gap:10px;margin-bottom:20px;">
-            <button id="btn-hosp-pub" class="fz-dash-select" onclick="setHospital('pub')" style="background:#800000;color:white;border:2px solid #800000;">Publiek</button>
-            <button id="btn-hosp-priv" class="fz-dash-select" onclick="setHospital('priv')">Privé (S2)</button>
-        </div>
-
-        <div class="fz-calc-module">
-            <div style="margin-bottom:15px;font-weight:bold;">Scenario: Heupoperatie</div>
-
-            <div class="fz-calc-row"><span>Basis:</span><span>€ 2.300</span></div>
-            <div class="fz-calc-row" id="row-supplements"><span>Supplementen:</span><span>€ 1.200</span></div>
-            <div class="fz-calc-row"><span>Forfait (5 dagen):</span><span>€ 100</span></div>
-
-            <div class="fz-calc-row"><span>Ameli:</span><span id="res-f4-ameli">€ 0,00</span></div>
-            <div class="fz-calc-row"><span>Mutuelle:</span><span id="res-f4-mut">€ 0,00</span></div>
-
-            <div class="fz-calc-total">
-                <div class="fz-calc-row"><span>Jij betaalt:</span><span id="res-f4-user">€ 0,00</span></div>
-            </div>
-
-            <button class="fz-toggle-btn" onclick="toggleDetails('det-f4')">Toon analyse</button>
-            <div id="det-f4" class="fz-details"></div>
-        </div>
-    </div>
-</div>
-
-<!-- ===== FASE 5 ===== -->
-<div class="fz-section">
-    <div class="fz-section-header">
-        <div class="fz-step-num">5</div>
-        <h2 class="fz-section-title">SSR Revalidatie</h2>
-    </div>
-
-    <div class="fz-content">
-        <div class="fz-calc-module">
-            <strong>30 dagen SSR:</strong> € 600 forfait<br>
-            <span id="res-f5-text">...</span>
-        </div>
-    </div>
-</div>
-
-</div>
-
+<!-- ========================================================= -->
+<!-- SCRIPTS -->
+<!-- ========================================================= -->
+<script src="scenarios.js"></script>
+<script src="scenarioEngine.js"></script>
 <script src="script.js"></script>
+
 </body>
 </html>
