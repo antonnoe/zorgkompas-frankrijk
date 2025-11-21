@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Zorgkompas Frankrijk</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
@@ -18,16 +18,16 @@
 
     <div class="zk-dash-block">
         <label>Status verzekerde</label>
-        <select id="profile-status">
+        <select id="zk-status">
             <option value="worker">A. Werkende / Ondernemer (URSSAF)</option>
-            <option value="pensioner">B. Gepensioneerd (S1)</option>
-            <option value="resident">C. Inwoner (PUMa / CSM)</option>
+            <option value="pensioner">B. Gepensioneerde (S1 / CAK)</option>
+            <option value="resident">C. Inwoner (PUMa)</option>
         </select>
     </div>
 
     <div class="zk-dash-block">
         <label>Mutuelle</label>
-        <select id="profile-mutuelle">
+        <select id="zk-mutuelle">
             <option value="0">Geen mutuelle</option>
             <option value="1">100%</option>
             <option value="2" selected>200%</option>
@@ -36,39 +36,37 @@
         </select>
     </div>
 
-    <div class="zk-dash-block small">
+    <div class="zk-dash-block">
         <label>Opties</label>
-        <div class="zk-opt-row">
-            <label><input type="checkbox" id="profile-ald"> ALD</label>
-            <label><input type="checkbox" id="profile-traitant" checked> Traitant</label>
-            <label><input type="checkbox" id="profile-private"> Privé</label>
+        <div class="zk-opt-line">
+            <input type="checkbox" id="zk-opt-ald" /> ALD
+            <input type="checkbox" id="zk-opt-traitant" checked /> Traitant
+            <input type="checkbox" id="zk-opt-private" /> Privé
         </div>
     </div>
 
-    <div id="zk-total">
-        <div class="zk-total-label">U betaalt</div>
-        <div class="zk-total-value" id="zk-total-value">€ 0,00</div>
-        <div class="zk-total-note" id="zk-total-warnings"></div>
+    <div id="zk-total-box">
+        <div id="zk-total-label">U betaalt (indicatie):</div>
+        <div id="zk-total-value">€ 0,00</div>
     </div>
 
-</div>
+</div> <!-- dashboard -->
 
-<section id="zk-scenario-panel">
+<section id="zk-scenarios">
     <h3>Zorgvraag / ziektebeeld</h3>
     <select id="zk-scenario-select">
         <option value="">-- Kies een scenario --</option>
     </select>
 </section>
 
-<section id="zk-detail-container"></section>
+<section id="zk-output"></section>
 
 <footer id="zk-footer">
     <p><strong>Disclaimer:</strong> Het Zorgkompas Frankrijk is een educatieve simulator. Alle bedragen zijn indicatief.</p>
 </footer>
 
-<script src="scenarios.js"></script>
-<script src="scenarioEngine.js"></script>
-<script src="script.js"></script>
+<!-- BELANGRIJK: Module mode -->
+<script type="module" src="script.js"></script>
 
 </body>
 </html>
