@@ -1,5 +1,5 @@
 /* ============================================================
-   ZORGKOMPAS CONTROLLER - FINAL V3 (Met Label Fix)
+   ZORGKOMPAS CONTROLLER - FINAL V4 (Met Café Claude integratie)
    ============================================================ */
 
 import { ZK_SCENARIOS } from "./scenarios.js";
@@ -38,9 +38,69 @@ const ZK_STATE = {
 };
 
 // ------------------------------------------------------------
-// 3. INIT
+// 3. CAFÉ CLAUDE INTEGRATIE
+// ------------------------------------------------------------
+function checkCafeClaudeReferral() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromCafeClaude = urlParams.get('from') === 'cafeclaude';
+    
+    if (fromCafeClaude) {
+        showCafeClaudeButton();
+    }
+}
+
+function showCafeClaudeButton() {
+    const banner = document.createElement('div');
+    banner.id = 'zk-cafeclaude-banner';
+    banner.innerHTML = `
+        <a href="https://infofrankrijk.com/cafe-claude" class="zk-cafeclaude-btn">
+            ← Terug naar Café Claude
+        </a>
+    `;
+    
+    // Voeg CSS toe
+    const style = document.createElement('style');
+    style.textContent = `
+        #zk-cafeclaude-banner {
+            background: linear-gradient(135deg, #800000 0%, #a00000 100%);
+            padding: 12px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .zk-cafeclaude-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .zk-cafeclaude-btn:hover {
+            background: rgba(255,255,255,0.25);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Voeg banner toe aan begin van body
+    document.body.insertBefore(banner, document.body.firstChild);
+}
+
+// ------------------------------------------------------------
+// 4. INIT
 // ------------------------------------------------------------
 function initApp() {
+    // Check of we van Café Claude komen
+    checkCafeClaudeReferral();
+    
     const select = document.getElementById("zk-scenario-select");
     
     ZK_SCENARIOS.forEach(s => {
@@ -80,7 +140,7 @@ function updateState(e) {
 }
 
 // ------------------------------------------------------------
-// 4. BEREKENING & RENDER
+// 5. BEREKENING & RENDER
 // ------------------------------------------------------------
 function updateCalculation() {
     if (!ZK_STATE.scenario) return;
