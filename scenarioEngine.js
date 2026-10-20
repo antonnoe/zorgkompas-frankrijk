@@ -101,12 +101,12 @@ function calculateStep(step, state) {
 
     // 3. FRANCHISES
     let franchise = 0;
-    // Consult: verhoogd naar €2
-    if (step.type === "consult" || step.type === "diagnostiek") franchise = ZK_CONFIG.franchise.consult;
-    // Medicatie: verhoogd naar €1 per doosje
-    if (step.type === "medicatie") franchise = (step.items || []).length * ZK_CONFIG.franchise.medicatie_per_doosje;
-    // Kine: €2 per sessie (limiet per jaar bestaat, maar hier per geval)
-    if (step.type === "kine") franchise = step.sessions * ZK_CONFIG.franchise.kine_per_sessie;
+    // Consult of diagnostische handeling: participation forfaitaire
+    if (step.type === "consult" || step.type === "diagnostiek") franchise = ZK_CONFIG.franchises_en_participation.participation_forfaitaire;
+    // Medicatie: franchise per verpakking
+    if (step.type === "medicatie") franchise = (step.items || []).length * ZK_CONFIG.franchises_en_participation.franchise_geneesmiddel_per_verpakking;
+    // Kine: €1 per handeling (dag- en jaarplafonds worden hier niet toegepast)
+    if (step.type === "kine") franchise = step.sessions * ZK_CONFIG.franchises_en_participation.franchise_paramedisch_per_handeling;
     
     if (step.type === "SSR") ameliPay = 0; // Forfait journalier niet door Ameli
 

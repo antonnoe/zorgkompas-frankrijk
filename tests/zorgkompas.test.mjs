@@ -20,11 +20,14 @@ const C = Z.ZK_CONFIG;
 // Consult huisarts: 30 x 70% = 21, min 2 franchise = 19 (Peil: brss_consult_medecin_traitant)
 gelijk("consult huisarts, vergoed Ameli", stap({ type: "consult", role: "Huisarts", brss: C.consult_huisarts.waarde, cost: C.consult_huisarts.waarde }).cost_ameli, 19);
 // Buiten parcours: 30 x 30% = 9 vóór franchise (Peil: vergoeding_zonder_medecin_traitant)
-gelijk("consult buiten parcours, vergoed vóór franchise", stap({ type: "consult", role: "Specialist", brss: 30, cost: 30 }, { traitant: false }).cost_ameli + C.franchise.consult, 9);
+gelijk("consult buiten parcours, vergoed vóór franchise", stap({ type: "consult", role: "Specialist", brss: 30, cost: 30 }, { traitant: false }).cost_ameli + C.franchises_en_participation.participation_forfaitaire, 9);
 // Medicijnen: 20 x 65% = 13, min 1 franchise = 12 (Peil: vergoeding_kine_en_medicatie)
 gelijk("doosje medicijnen van 20 euro, vergoed", stap({ type: "medicatie", items: [{ name: "x", brss: 20, cost: 20 }] }).cost_ameli, 12);
 // Kine: 16,58 x 60% = 9,95 vóór franchise (Peil: brss_kine_per_sessie)
-gelijk("kine-séance, vergoed vóór franchise", stap({ type: "kine", sessions: 1, brss: C.kine_per_sessie.waarde, cost: C.kine_per_sessie.waarde }).cost_ameli + C.franchise.kine_per_sessie, 9.95);
+gelijk("kine-séance, vergoed vóór franchise", stap({ type: "kine", sessions: 1, brss: C.kine_per_sessie.waarde, cost: C.kine_per_sessie.waarde }).cost_ameli + C.franchises_en_participation.franchise_paramedisch_per_handeling, 9.95);
+// Kine netto: 16,58 x 60% = 9,95 vergoed, na 1 euro franchise 8,95 per séance (Peil-testvoorbeeld)
+gelijk("kine-séance, netto vergoed na 1 euro franchise", stap({ type: "kine", sessions: 1, brss: C.kine_per_sessie.waarde, cost: C.kine_per_sessie.waarde }).cost_ameli, 8.95);
+gelijk("kine, 20 sessies: franchise 20 x 1 euro", stap({ type: "kine", sessions: 20, brss: C.kine_per_sessie.waarde, cost: C.kine_per_sessie.waarde }).cost_ameli, Math.round((20 * C.kine_per_sessie.waarde * 0.6 - 20) * 100) / 100);
 // Specialist APC: 60 x 70% = 42, min 2 = 40
 gelijk("consult specialist (APC), vergoed", stap({ type: "consult", role: "Neurochirurg", brss: C.specialist_apc.waarde, cost: C.specialist_apc.waarde }).cost_ameli, 40);
 // Dagbijdrage: 3 dagen x 23 euro in het scenario hernia, 30 dagen x 23 euro in de revalidatiekliniek

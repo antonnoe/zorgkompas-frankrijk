@@ -66,6 +66,24 @@
       "waarde_weergave": "70 procent van het tarief conventionnel voor artsenconsulten in het parcours de soins",
       "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
       "verificatiedatum": "2026-10-19"
+    },
+    {
+      "id": "p.fr.secu.franchises_en_participation",
+      "naam": "Franchises médicales en participation forfaitaire",
+      "waarde": {
+        "participation_forfaitaire": 2,
+        "franchise_geneesmiddel_per_verpakking": 1,
+        "franchise_paramedisch_per_handeling": 1,
+        "franchise_paramedisch_max_per_dag": 4,
+        "franchise_vervoer": 4,
+        "franchise_vervoer_max_per_dag": 8,
+        "jaarplafond_franchises": 70,
+        "jaarplafond_participations": 70,
+        "plafonds_geldig_vanaf": "2026-10-01"
+      },
+      "waarde_weergave": "2 euro per consult of handeling, 1 euro per verpakking of paramedische handeling, 4 euro per vervoer; plafonds 70 euro franchises en 70 euro participations per jaar sinds 1 oktober 2026",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F21760",
+      "verificatiedatum": "2026-10-20"
     }
   ]
 }

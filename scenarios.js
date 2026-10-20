@@ -28,8 +28,21 @@ export const ZK_CONFIG = {
         datum: "2026-10-19"
     },
 
-    // Eigen risico per handeling (nog niet in Peil opgenomen)
-    franchise: { consult: 2.00, medicatie_per_doosje: 1.00, kine_per_sessie: 2.00 },
+    // Franchises en participation forfaitaire (euro). Plafonds gelden sinds 1 oktober 2026 per jaar; de tool rekent per zorgtraject en past de dag- en jaarplafonds niet toe.
+    franchises_en_participation: {
+        participation_forfaitaire: 2,            // per consult of handeling (max 4 per dag bij dezelfde zorgverlener)
+        franchise_geneesmiddel_per_verpakking: 1,
+        franchise_paramedisch_per_handeling: 1,  // bijvoorbeeld kine
+        franchise_paramedisch_max_per_dag: 4,
+        franchise_vervoer: 4,
+        franchise_vervoer_max_per_dag: 8,
+        jaarplafond_franchises: 70,
+        jaarplafond_participations: 70,
+        plafonds_geldig_vanaf: "2026-10-01",
+        peil: "p.fr.secu.franchises_en_participation",
+        bron: "service-public.fr F21760 en F165, art. D160-6 tot D160-11 CSS, décret 2026-858",
+        datum: "2026-10-20"
+    },
 
     // Operatie met BRSS boven deze grens wordt volledig vergoed (nog niet in Peil opgenomen)
     operatie_volledig_boven: 120
@@ -105,7 +118,7 @@ export const ZK_SCENARIOS = [
                 sessions: 20,
                 brss: ZK_CONFIG.kine_per_sessie.waarde, // Tarief per sessie
                 cost: ZK_CONFIG.kine_per_sessie.waarde,
-                notes: ["Franchise stapelt op (€2 per sessie)"],
+                notes: [`Franchise stapelt op (${EUR(ZK_CONFIG.franchises_en_participation.franchise_paramedisch_per_handeling)} per sessie)`],
                 lex: ["Auxiliaire médical"]
             }
         ]
