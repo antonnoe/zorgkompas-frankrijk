@@ -53,12 +53,12 @@ export const ZK_CONFIG = {
         datum: "2026-10-20"
     },
 
-    // Forfait bij zware handelingen (actes lourds): komt in de plaats van het ticket modérateur. NOG NIET IN PEIL (de regie voegt dit toe).
+    // Forfait bij zware handelingen (actes lourds): komt in de plaats van het ticket modérateur.
     forfait_actes_lourds: {
         bedrag: 32,    // euro
         drempel: 120,  // tarief vanaf 120 euro
         geldig_vanaf: "2026-04-01",
-        peil: null,    // nog niet in Peil
+        peil: "p.fr.secu.forfait_actes_lourds",
         bron: "art. R160-16 I CSS, décret 2026-228; service-public F165",
         datum: "2026-10-20"
     }

@@ -102,6 +102,17 @@
       "waarde_weergave": "4 euro per sanitair vervoer, maximaal 8 euro per dag; valt onder het jaarplafond van 70 euro",
       "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F2951",
       "verificatiedatum": "2026-10-20"
+    },
+    {
+      "id": "p.fr.secu.forfait_actes_lourds",
+      "naam": "Forfait voor zware handelingen (vanaf 120 euro)",
+      "waarde": {
+        "bedrag": 32,
+        "drempel_tarief": 120
+      },
+      "waarde_weergave": "32 euro per handeling met een tarief vanaf 120 euro (in plaats van het ticket modérateur), sinds 1 april 2026; daarvoor 24 euro",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
+      "verificatiedatum": "2026-10-20"
     }
   ]
 }

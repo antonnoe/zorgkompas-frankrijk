@@ -97,7 +97,7 @@ gelijk("medicijnen van 20 euro, niveau 300: ticket modérateur 7", mut({ type: "
   gelijk("griep zonder traitant: totaal zonder mutuelle", r.totals.user_zonder_mutuelle, 27.45);
 }
 if (/operatie_volledig_boven/.test(Z.ZK_CONFIG ? JSON.stringify(Z.ZK_CONFIG) : "")) fouten.push("operatie_volledig_boven bestaat nog in ZK_CONFIG.");
-if (Z.ZK_CONFIG.forfait_actes_lourds.bedrag !== 32 || Z.ZK_CONFIG.forfait_actes_lourds.drempel !== 120 || Z.ZK_CONFIG.forfait_actes_lourds.peil !== null) fouten.push("forfait_actes_lourds moet 32 euro, drempel 120 en peil null zijn.");
+if (Z.ZK_CONFIG.forfait_actes_lourds.bedrag !== 32 || Z.ZK_CONFIG.forfait_actes_lourds.drempel !== 120 || Z.ZK_CONFIG.forfait_actes_lourds.peil !== "p.fr.secu.forfait_actes_lourds") fouten.push("forfait_actes_lourds moet 32 euro, drempel 120 en het Peil-id p.fr.secu.forfait_actes_lourds hebben.");
 // Uitleg bij de dagbijdrage noemt beide bedragen en de uitzonderingen
 const u = Z.ZK_FORFAIT_UITLEG;
 for (const t of ["€23", "€17", "HAD", "AME", "arbeidsongeval", "Ehpad", "USLD"]) if (!u.includes(t)) fouten.push(`Uitleg dagbijdrage mist '${t}'.`);
