@@ -91,8 +91,9 @@ function calculateStep(step, state) {
         if (step.type === "operation" && brss > ZK_CONFIG.operatie_volledig_boven) ameliRate = 1.0;
     }
 
-    // Strafkorting (Geen traitant)
-    if (!state.traitant && !isAld && step.role !== 'Huisarts' && step.type === 'consult') {
+    // Strafkorting (geen aangemelde médecin traitant): geldt voor elk artsenconsult, ook bij een huisarts die niet uw médecin traitant is.
+    // Uitzonderingen (onder de 16 jaar, spoed, buiten de eigen woonplaats) worden niet doorgerekend.
+    if (!state.traitant && !isAld && step.type === 'consult') {
         ameliRate = ZK_CONFIG.vergoeding.buiten_parcours;
         notes.push("Strafkorting (buiten parcours)");
     }

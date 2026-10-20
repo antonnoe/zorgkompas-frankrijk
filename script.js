@@ -17,7 +17,7 @@ const LEXICON_DB = {
     "Franchise": "Eigen risico per handeling (bijv. €2). Wordt nooit vergoed.",
     "Vignette": "Kleurcode op medicijnen die vergoeding bepaalt (65%, 30%, 15%).",
     "Forfait Journalier": ZK_FORFAIT_UITLEG,
-    "Parcours de soins": "Zorgtraject. Altijd eerst naar huisarts voor verwijzing.",
+    "Parcours de soins": "Zorgtraject. Altijd eerst naar uw vaste huisarts (médecin traitant) voor verwijzing. Zonder aangemelde médecin traitant vergoedt de Sécu 30 procent in plaats van 70 procent van het tarief. Uitzonderingen, zoals onder de 16 jaar, spoed en buiten uw eigen woonplaats, rekent de tool niet door.",
     "Dépassements": "Ereloonsupplementen bovenop het basistarief.",
     "Auxiliaire médical": "Paramedici zoals fysiotherapeuten.",
     "SSR": "Revalidatiekliniek (Soins de Suite et de Réadaptation).",

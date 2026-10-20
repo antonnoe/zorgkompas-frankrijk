@@ -28,6 +28,17 @@ gelijk("kine-séance, vergoed vóór franchise", stap({ type: "kine", sessions: 
 // Kine netto: 16,58 x 60% = 9,95 vergoed, na 1 euro franchise 8,95 per séance (Peil-testvoorbeeld)
 gelijk("kine-séance, netto vergoed na 1 euro franchise", stap({ type: "kine", sessions: 1, brss: C.kine_per_sessie.waarde, cost: C.kine_per_sessie.waarde }).cost_ameli, 8.95);
 gelijk("kine, 20 sessies: franchise 20 x 1 euro", stap({ type: "kine", sessions: 20, brss: C.kine_per_sessie.waarde, cost: C.kine_per_sessie.waarde }).cost_ameli, Math.round((20 * C.kine_per_sessie.waarde * 0.6 - 20) * 100) / 100);
+// Vinkje médecin traitant: aan = 70 procent, uit = 30 procent, ook bij een huisarts (rol "Huisarts")
+{
+  const huisarts = { type: "consult", role: "Huisarts", brss: C.consult_huisarts.waarde, cost: C.consult_huisarts.waarde };
+  gelijk("huisarts, médecin traitant aan: 70 procent min 2 euro", stap(huisarts, { traitant: true }).cost_ameli, 19);
+  gelijk("huisarts, médecin traitant uit: 30 procent min 2 euro", stap(huisarts, { traitant: false }).cost_ameli, 7);
+  const griep = (traitant) => Z.zkRunScenario("griep", { mutuelle: 0, ald: false, traitant, private: false }).steps[0].cost_ameli;
+  gelijk("scenario griep, huisartsconsult met vinkje aan", griep(true), 19);
+  gelijk("scenario griep, huisartsconsult met vinkje uit", griep(false), 7);
+  const onco = Z.zkRunScenario("oncologie", { mutuelle: 0, ald: false, traitant: false, private: false }).steps[0];
+  gelijk("oncologie (ALD): geen korting, 100 procent min 2 euro", onco.cost_ameli, 28);
+}
 // Specialist APC: 60 x 70% = 42, min 2 = 40
 gelijk("consult specialist (APC), vergoed", stap({ type: "consult", role: "Neurochirurg", brss: C.specialist_apc.waarde, cost: C.specialist_apc.waarde }).cost_ameli, 40);
 // Dagbijdrage: 3 dagen x 23 euro in het scenario hernia, 30 dagen x 23 euro in de revalidatiekliniek
