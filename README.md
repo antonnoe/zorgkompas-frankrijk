@@ -6,6 +6,10 @@ Een educatieve simulator die laat zien wat een zorgtraject in Frankrijk ongeveer
 
 Alle tarieven, dagbijdragen en vergoedingspercentages staan in het blok `ZK_CONFIG` bovenaan `scenarios.js`, elk met bron en controledatum. De rekenregels in `scenarioEngine.js` en de scenario's lezen alleen uit dat blok. Pas een bedrag dus alleen daar aan.
 
+## Mutuelle
+
+De mutuelle wordt gerekend als contrat responsable (art. L871-1, R871-1, R871-2 CSS): niveaus 100, 150, 200 en 300 procent van de BR, Sécu inbegrepen. Participation en franchises, de korting buiten het parcours en (bij een arts die niet OPTAM is) een deel van het dépassement vergoedt de mutuelle niet. Het forfait van 32 euro bij zware handelingen (vanaf 120 euro) staat in `ZK_CONFIG.forfait_actes_lourds` en is nog niet in Peil.
+
 ## Peil is de bron
 
 De bedragen komen uit Peil, het parameterregister van Communities Abroad. `peil/waarden.json` is de kopie van die waarden voor deze tool. De stempel "Gecontroleerd tegen Peil" onder de uitkomst en de alinea in de voettekst komen uit `scenarioEngine.js`; de datum komt alleen uit `PEIL_STAND`. Bij een nieuwe controle: werk `peil/waarden.json` bij, pas `ZK_CONFIG` aan en zet daarna `PEIL_STAND` op de nieuwe datum.

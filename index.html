@@ -23,17 +23,37 @@
     
     <div class="zk-dash-block">
         <label for="zk-mutuelle">
-            <span class="zk-tooltip-wrapper" data-tip="Aanvullende verzekering. Dekt het gat tussen Sécu en werkelijke kosten (tot een limiet).">
+            <span class="zk-tooltip-wrapper zk-tip-wide" data-tip="Een mutuelle vult de Sécu aan. 100, 150, 200 of 300 procent betekent: Sécu en mutuelle samen vergoeden tot dat percentage van het officiële tarief (BR), nooit meer dan de werkelijke kosten. 100 procent is het wettelijke minimum bij een contrat responsable. Een mutuelle mag de korting buiten het parcours de soins en de franchises niet vergoeden. Voorbeeld van een Nederlandstalige aanbieder: CMUNF (cmunf.fr), formule Integraal 100, 150 en 300 procent, een contrat responsable. Bij een S1 via Nederland verschilt het per aanbieder of u kunt aansluiten.">
                 Mutuelle <img src="assets/info.svg" class="zk-info-icon" alt="[i]">
             </span>
         </label>
         <select id="zk-mutuelle">
             <option value="0">Geen mutuelle (Alleen Sécu)</option>
             <option value="1">100% (Basis)</option>
+            <option value="1.5">150%</option>
             <option value="2" selected>200% (Gemiddeld)</option>
             <option value="3">300% (Comfort)</option>
-            <option value="4">400% (Excellent)</option>
         </select>
+        <details class="zk-uitleg">
+            <summary>Uitleg bij de mutuelle</summary>
+            <p>100, 150, 200 of 300 procent betekent: Sécu en mutuelle samen vergoeden tot dat percentage van het officiële tarief (BR), nooit meer dan de werkelijke kosten. 100 procent is het wettelijke minimum bij een contrat responsable.</p>
+            <p>Een mutuelle mag de korting buiten het parcours de soins en de franchises niet vergoeden.</p>
+            <p>Als voorbeeld van een Nederlandstalige aanbieder: <a href="https://www.cmunf.fr" target="_blank" rel="noopener">CMUNF</a>, met de formule Integraal in 100, 150 en 300 procent, een contrat responsable. Bij een S1 via Nederland verschilt het per aanbieder of u kunt aansluiten.</p>
+        </details>
+    </div>
+
+    <div class="zk-dash-block">
+        <label for="zk-optam">
+            <span class="zk-tooltip-wrapper zk-tip-wide" data-tip="OPTAM: de arts houdt zich aan gematigde tarieven. Bij een arts die niet OPTAM is, vergoedt een mutuelle het ereloonsupplement (dépassement) minder: hoogstens 100 procent BR en hoogstens het OPTAM-niveau min 20 procent BR. Dus 150 wordt 130, 200 wordt 180 en 300 wordt 200 in totaal.">
+                Arts is OPTAM <img src="assets/info.svg" class="zk-info-icon" alt="[i]">
+            </span>
+        </label>
+        <select id="zk-optam">
+            <option value="onbekend" selected>Weet ik niet</option>
+            <option value="ja">Ja, OPTAM</option>
+            <option value="nee">Nee, niet OPTAM</option>
+        </select>
+        <span class="zk-hint">Bij "weet ik niet" rekenen we als OPTAM. Een arts die niet OPTAM is, wordt door uw mutuelle minder vergoed.</span>
     </div>
 
     <div class="zk-dash-block wide">
@@ -66,6 +86,7 @@
     <div id="zk-total">
         <div class="zk-total-label">Indicatie eigen bijdrage:</div>
         <div id="zk-total-value" class="zk-total-value">€ 0,00</div>
+        <div id="zk-total-zonder" class="zk-total-note"></div>
         <div class="zk-total-note">Excl. maandelijkse premies</div>
     </div>
 </div>

@@ -31,6 +31,7 @@ const LEXICON_DB = {
 const ZK_STATE = {
     status: "worker",
     mutuelle: 2,
+    optam: "onbekend",
     ald: false,
     traitant: true,
     private: false,
@@ -117,7 +118,7 @@ function initApp() {
 }
 
 function attachListeners() {
-    const ids = ["zk-mutuelle", "zk-opt-ald", "zk-opt-traitant", "zk-opt-private"];
+    const ids = ["zk-mutuelle", "zk-optam", "zk-opt-ald", "zk-opt-traitant", "zk-opt-private"];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.addEventListener("change", updateState);
@@ -152,6 +153,8 @@ function updateCalculation() {
     if (!result) return;
 
     document.getElementById("zk-total-value").textContent = formatMoney(result.totals.user);
+    const zonder = document.getElementById("zk-total-zonder");
+    if (zonder) zonder.textContent = "Zonder mutuelle: " + formatMoney(result.totals.user_zonder_mutuelle);
     renderOutput(result);
 }
 
@@ -171,8 +174,12 @@ function renderOutput(result) {
             <p>${s.description}</p>
             
             <div style="display:flex; justify-content:space-between; color:var(--brand); font-weight:bold; font-size:18px; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
-                <span>Uw geschatte bijdrage:</span>
+                <span>Uw geschatte bijdrage, met uw mutuelle:</span>
                 <span>${formatMoney(result.totals.user)}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#444; font-size:15px; margin-top:6px;">
+                <span>Zonder mutuelle (alleen Sécu):</span>
+                <span>${formatMoney(result.totals.user_zonder_mutuelle)}</span>
             </div>
         </div>
     `;

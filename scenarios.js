@@ -44,8 +44,24 @@ export const ZK_CONFIG = {
         datum: "2026-10-20"
     },
 
-    // Operatie met BRSS boven deze grens wordt volledig vergoed (nog niet in Peil opgenomen)
-    operatie_volledig_boven: 120
+    // Contrat responsable, mutuelle (art. L871-1, R871-1, R871-2 CSS; service-public F20314 en F165, vérifié 01-10-2026)
+    mutuelle: {
+        niveaus: [0, 1, 1.5, 2, 3],   // garantie als veelvoud van de BR, Sécu inbegrepen; 400 procent vervalt
+        niet_optam_min: 0.2,           // niet-OPTAM: dépassement hoogstens (OPTAM-dekking min 20 procent BR) ...
+        niet_optam_max_depassement: 1, // ... en hoogstens 100 procent BR
+        bron: "art. R871-2 2° CSS; service-public F20314",
+        datum: "2026-10-20"
+    },
+
+    // Forfait bij zware handelingen (actes lourds): komt in de plaats van het ticket modérateur. NOG NIET IN PEIL (de regie voegt dit toe).
+    forfait_actes_lourds: {
+        bedrag: 32,    // euro
+        drempel: 120,  // tarief vanaf 120 euro
+        geldig_vanaf: "2026-04-01",
+        peil: null,    // nog niet in Peil
+        bron: "art. R160-16 I CSS, décret 2026-228; service-public F165",
+        datum: "2026-10-20"
+    }
 };
 
 const EUR = n => "€" + String(n).replace(".", ",");
