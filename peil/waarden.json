@@ -68,21 +68,39 @@
       "verificatiedatum": "2026-10-19"
     },
     {
-      "id": "p.fr.secu.franchises_en_participation",
-      "naam": "Franchises médicales en participation forfaitaire",
+      "id": "p.fr.secu.franchise_medicale",
+      "naam": "Franchise médicale (medicijnen en paramedische handelingen)",
       "waarde": {
-        "participation_forfaitaire": 2,
-        "franchise_geneesmiddel_per_verpakking": 1,
-        "franchise_paramedisch_per_handeling": 1,
-        "franchise_paramedisch_max_per_dag": 4,
-        "franchise_vervoer": 4,
-        "franchise_vervoer_max_per_dag": 8,
-        "jaarplafond_franchises": 70,
-        "jaarplafond_participations": 70,
-        "plafonds_geldig_vanaf": "2026-10-01"
+        "per_doos_medicijn": 1,
+        "per_paramedische_handeling": 1,
+        "dagplafond_paramedisch": 4,
+        "jaarplafond": 70
       },
-      "waarde_weergave": "2 euro per consult of handeling, 1 euro per verpakking of paramedische handeling, 4 euro per vervoer; plafonds 70 euro franchises en 70 euro participations per jaar sinds 1 oktober 2026",
-      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F21760",
+      "waarde_weergave": "1 euro per doosje medicijnen en per paramedische handeling (max 4 euro per dag); jaarplafond 70 euro per persoon (was 50 euro tot 30 september 2026)",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
+      "verificatiedatum": "2026-10-20"
+    },
+    {
+      "id": "p.fr.secu.participation_forfaitaire",
+      "naam": "Participation forfaitaire per consult",
+      "waarde": {
+        "per_handeling": 2,
+        "dagplafond_zelfde_zorgverlener": 8,
+        "jaarplafond": 70
+      },
+      "waarde_weergave": "2 euro per consult, handeling, röntgen of labonderzoek; maximaal 8 euro per dag bij dezelfde zorgverlener; jaarplafond 70 euro (35 keer), was 50 euro tot 30 september 2026",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
+      "verificatiedatum": "2026-10-20"
+    },
+    {
+      "id": "p.fr.secu.franchise_transport",
+      "naam": "Franchise medisch transport",
+      "waarde": {
+        "per_transport": 4,
+        "dagplafond": 8
+      },
+      "waarde_weergave": "4 euro per sanitair vervoer, maximaal 8 euro per dag; valt onder het jaarplafond van 70 euro",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F2951",
       "verificatiedatum": "2026-10-20"
     }
   ]

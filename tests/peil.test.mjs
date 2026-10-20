@@ -25,7 +25,9 @@ const KOPPELING = {
   "p.fr.secu.forfait_journalier": { constante: "ZK_CONFIG.forfait_journalier", vergelijk: (w) => [["dagbijdrage ziekenhuis of kliniek", C.forfait_journalier.ziekenhuis, w && w.ziekenhuis], ["dagbijdrage psychiatrie", C.forfait_journalier.psychiatrie, w && w.psychiatrie], ["hernia gebruikt dagbijdrage ziekenhuis", C.forfait_journalier.ziekenhuis, Z.zkGetScenario("hernia").steps[2].forfait_jour], ["oncologie gebruikt dagbijdrage ziekenhuis", C.forfait_journalier.ziekenhuis, Z.zkGetScenario("oncologie").steps[4].forfait_jour]] },
   "p.fr.secu.vergoedingspercentage_standaard": { constante: "ZK_CONFIG.vergoeding.standaard", vergelijk: (w) => [["standaard vergoedingspercentage", C.vergoeding.standaard, w]] },
   "p.fr.secu.vergoeding_kine_en_medicatie": { constante: "ZK_CONFIG.vergoeding.kine en .medicatie", vergelijk: (w) => [["vergoeding kine", C.vergoeding.kine, w && w.kine], ["vergoeding medicijnen (SMR majeur of important)", C.vergoeding.medicatie, w && w.medicatie_smr_majeur_important]] },
-  "p.fr.secu.franchises_en_participation": { constante: "ZK_CONFIG.franchises_en_participation", vergelijk: (w) => Object.keys(w || {}).map((k) => [`franchise-parameter ${k}`, C.franchises_en_participation[k], w[k]]).concat([["alle sleutels van Peil staan in ZK_CONFIG", true, !!w && Object.keys(w).every((k) => k in C.franchises_en_participation)]]) },
+  "p.fr.secu.franchise_medicale": { constante: "ZK_CONFIG.franchises_en_participation", vergelijk: (w) => [["per verpakking", C.franchises_en_participation.franchise_geneesmiddel_per_verpakking, w && w.per_doos_medicijn], ["per paramedische handeling", C.franchises_en_participation.franchise_paramedisch_per_handeling, w && w.per_paramedische_handeling], ["dagplafond paramedisch", C.franchises_en_participation.franchise_paramedisch_max_per_dag, w && w.dagplafond_paramedisch], ["jaarplafond franchises", C.franchises_en_participation.jaarplafond_franchises, w && w.jaarplafond]] },
+  "p.fr.secu.participation_forfaitaire": { constante: "ZK_CONFIG.franchises_en_participation", vergelijk: (w) => [["per handeling", C.franchises_en_participation.participation_forfaitaire, w && w.per_handeling], ["jaarplafond participations", C.franchises_en_participation.jaarplafond_participations, w && w.jaarplafond]] },
+  "p.fr.secu.franchise_transport": { constante: "ZK_CONFIG.franchises_en_participation", vergelijk: (w) => [["per vervoer", C.franchises_en_participation.franchise_vervoer, w && w.per_transport], ["dagplafond vervoer", C.franchises_en_participation.franchise_vervoer_max_per_dag, w && w.dagplafond]] },
   "p.fr.secu.vergoeding_zonder_medecin_traitant": { constante: "ZK_CONFIG.vergoeding.buiten_parcours", vergelijk: (w) => [["vergoeding buiten parcours de soins", C.vergoeding.buiten_parcours, w]] },
 };
 
@@ -81,7 +83,7 @@ for (const [id, koppeling] of Object.entries(KOPPELING)) {
   for (const [wat, app, peil] of koppeling.vergelijk(kop.waarde)) {
     if (!gelijk(app, peil)) fout(`${id} (${kop.naam}), ${wat}: tool heeft ${JSON.stringify(app)}, peil/waarden.json heeft ${JSON.stringify(peil)}. Constante: ${koppeling.constante}.`);
   }
-  if (C[koppeling.constante.split(".")[1]]?.peil && C[koppeling.constante.split(".")[1]].peil !== id) fout(`${id}: ZK_CONFIG verwijst naar een ander Peil-id (${C[koppeling.constante.split(".")[1]].peil}).`);
+  if (C[koppeling.constante.split(".")[1]]?.peil && !C[koppeling.constante.split(".")[1]].peil.split(/,\s*|\s+en\s+/).includes(id)) fout(`${id}: ZK_CONFIG verwijst naar een ander Peil-id (${C[koppeling.constante.split(".")[1]].peil}).`);
   console.log(`ok   ${id} <-> ${koppeling.constante}`);
 }
 const ongebruikt = lijst.filter((p) => !KOPPELING[p.id]).map((p) => p.id);

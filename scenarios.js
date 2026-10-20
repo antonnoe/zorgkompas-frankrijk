@@ -30,7 +30,7 @@ export const ZK_CONFIG = {
 
     // Franchises en participation forfaitaire (euro). Plafonds gelden sinds 1 oktober 2026 per jaar; de tool rekent per zorgtraject en past de dag- en jaarplafonds niet toe.
     franchises_en_participation: {
-        participation_forfaitaire: 2,            // per consult of handeling (max 4 per dag bij dezelfde zorgverlener)
+        participation_forfaitaire: 2,            // per consult of handeling (max 4 keer, dus 8 euro, per dag bij dezelfde zorgverlener)
         franchise_geneesmiddel_per_verpakking: 1,
         franchise_paramedisch_per_handeling: 1,  // bijvoorbeeld kine
         franchise_paramedisch_max_per_dag: 4,
@@ -39,7 +39,7 @@ export const ZK_CONFIG = {
         jaarplafond_franchises: 70,
         jaarplafond_participations: 70,
         plafonds_geldig_vanaf: "2026-10-01",
-        peil: "p.fr.secu.franchises_en_participation",
+        peil: "p.fr.secu.franchise_medicale, p.fr.secu.participation_forfaitaire en p.fr.secu.franchise_transport",
         bron: "service-public.fr F21760 en F165, art. D160-6 tot D160-11 CSS, décret 2026-858",
         datum: "2026-10-20"
     },

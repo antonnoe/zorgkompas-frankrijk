@@ -177,7 +177,7 @@ export function peilStandKort() {
 }
 export const PEIL_MERK = `<span class="peil-merk" aria-hidden="true">&#10003;</span>`;
 // Voorbehoud (disclaimer) direct onder de uitkomst; de stempel komt daarna.
-export const VOORBEHOUD_TEKST = "dit is een educatieve tool. Bedragen zijn indicatief en kunnen afwijken van uw persoonlijke situatie.";
+export const VOORBEHOUD_TEKST = "dit is een educatieve tool. Bedragen zijn indicatief en kunnen afwijken van uw persoonlijke situatie. Tarieven en vergoedingen van de Assurance Maladie komen uit Peil; prijzen van geneesmiddelen, privétarieven, ziekenhuis- en behandelkosten en de aanvulling door een mutuelle zijn schattingen.";
 export function voorbehoudHtml() {
     return `<p class="voorbehoud"><strong>Let op:</strong> ${VOORBEHOUD_TEKST}</p>`;
 }
