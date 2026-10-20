@@ -1,7 +1,51 @@
 /* ============================================================
-   ZORGKOMPAS SCENARIO DATABASE (2025 EDITIE)
-   Bedragen zijn indicatief o.b.v. tarieven 2024/2025.
+   ZORGKOMPAS SCENARIO DATABASE
+   Alle bedragen en percentages staan in ZK_CONFIG hieronder.
+   De bron is Peil, het parameterregister van Communities Abroad;
+   peil/waarden.json is de kopie, tests/peil.test.mjs bewaakt dat
+   dit blok daarmee overeenkomt. Pas bedragen alleen hier aan.
+   Stand van de controle: zie PEIL_STAND in scenarioEngine.js.
    ============================================================ */
+
+export const ZK_CONFIG = {
+    jaar: 2026,
+
+    // Basis van vergoeding (BRSS), in euro
+    consult_huisarts:   { waarde: 30.00, peil: "p.fr.secu.brss_consult_medecin_traitant", bron: "ameli.fr, tarifs conventionnels médecins, acte G, secteur 1", datum: "2026-10-19" },
+    kine_per_sessie:    { waarde: 16.58, peil: "p.fr.secu.brss_kine_per_sessie", bron: "ameli.fr, AMK 7,5 x 2,21 euro", datum: "2026-10-19" },
+    specialist_apc:     { waarde: 60.00, peil: "p.fr.secu.brss_specialist_apc", bron: "ameli.fr, tarifs conventionnels médecins, acte APC (buiten psychiater en neuroloog)", datum: "2026-10-19" },
+
+    // Dagbijdrage bij opname, euro per dag, sinds 1 maart 2026
+    forfait_journalier: { ziekenhuis: 23, psychiatrie: 17, peil: "p.fr.secu.forfait_journalier", bron: "ameli.fr, forfait hospitalier, arrêté du 27 februari 2026", datum: "2026-10-19" },
+
+    // Vergoedingspercentages van de Sécurité sociale
+    vergoeding: {
+        standaard:       0.70,  // p.fr.secu.vergoedingspercentage_standaard
+        kine:            0.60,  // p.fr.secu.vergoeding_kine_en_medicatie
+        medicatie:       0.65,  // p.fr.secu.vergoeding_kine_en_medicatie (SMR majeur of important)
+        buiten_parcours: 0.30,  // p.fr.secu.vergoeding_zonder_medecin_traitant
+        bron: "service-public.fr F165 en F1069, ameli.fr tableau récapitulatif des taux de remboursement",
+        datum: "2026-10-19"
+    },
+
+    // Eigen risico per handeling (nog niet in Peil opgenomen)
+    franchise: { consult: 2.00, medicatie_per_doosje: 1.00, kine_per_sessie: 2.00 },
+
+    // Operatie met BRSS boven deze grens wordt volledig vergoed (nog niet in Peil opgenomen)
+    operatie_volledig_boven: 120
+};
+
+const EUR = n => "€" + String(n).replace(".", ",");
+
+// Korte uitleg bij de dagbijdrage, gebruikt bij de scenario's en in de woordenlijst
+export const ZK_FORFAIT_UITLEG =
+    `Verplichte dagbijdrage bij opname: ${EUR(ZK_CONFIG.forfait_journalier.ziekenhuis)} per dag in ziekenhuis of kliniek, ` +
+    `${EUR(ZK_CONFIG.forfait_journalier.psychiatrie)} per dag in de psychiatrie (sinds 1 maart 2026). ` +
+    `Geen dagbijdrage bij thuishospitalisatie (HAD), complémentaire santé solidaire en AME, arbeidsongeval en in een Ehpad of USLD.`;
+
+const FORFAIT_NOTE =
+    `Liggeld ${EUR(ZK_CONFIG.forfait_journalier.ziekenhuis)} per dag (psychiatrie ${EUR(ZK_CONFIG.forfait_journalier.psychiatrie)}). ` +
+    `Geen liggeld bij thuishospitalisatie (HAD), complémentaire santé solidaire en AME, arbeidsongeval en in een Ehpad of USLD.`;
 
 export const ZK_SCENARIOS = [
 
@@ -16,9 +60,9 @@ export const ZK_SCENARIOS = [
             {
                 type: "consult",
                 role: "Huisarts",
-                brss: 30.00, // Nieuw tarief 2025
-                cost: 30.00,
-                notes: ["Standaard consult €30"],
+                brss: ZK_CONFIG.consult_huisarts.waarde,
+                cost: ZK_CONFIG.consult_huisarts.waarde,
+                notes: [`Standaard consult ${EUR(ZK_CONFIG.consult_huisarts.waarde)}`],
                 lex: ["BRSS", "Secteur 1"]
             },
             {
@@ -44,8 +88,8 @@ export const ZK_SCENARIOS = [
             {
                 type: "consult",
                 role: "Huisarts",
-                brss: 30.00,
-                cost: 30.00,
+                brss: ZK_CONFIG.consult_huisarts.waarde,
+                cost: ZK_CONFIG.consult_huisarts.waarde,
                 lex: ["Parcours de soins"]
             },
             {
@@ -59,8 +103,8 @@ export const ZK_SCENARIOS = [
             {
                 type: "kine",
                 sessions: 20,
-                brss: 16.13, // Tarief per sessie
-                cost: 16.13,
+                brss: ZK_CONFIG.kine_per_sessie.waarde, // Tarief per sessie
+                cost: ZK_CONFIG.kine_per_sessie.waarde,
                 notes: ["Franchise stapelt op (€2 per sessie)"],
                 lex: ["Auxiliaire médical"]
             }
@@ -78,7 +122,7 @@ export const ZK_SCENARIOS = [
             {
                 type: "consult",
                 role: "Neurochirurg",
-                brss: 55.00, // Basis specialist (APC)
+                brss: ZK_CONFIG.specialist_apc.waarde, // Basis specialist (APC)
                 cost: 90.00, // Veel voorkomend tarief
                 lex: ["OPTAM", "Secteur 2"]
             },
@@ -97,14 +141,15 @@ export const ZK_SCENARIOS = [
                 cost_public: 650.00,
                 cost_private: { base: 650.00, supplement: 400.00 }, // Ereloonchirurg
                 days: 3,
-                forfait_jour: 20.00,
+                forfait_jour: ZK_CONFIG.forfait_journalier.ziekenhuis,
+                notes: [FORFAIT_NOTE],
                 lex: ["Forfait Journalier", "Honoraires"]
             },
             {
                 type: "kine",
                 sessions: 10,
-                brss: 16.13,
-                cost: 16.13
+                brss: ZK_CONFIG.kine_per_sessie.waarde,
+                cost: ZK_CONFIG.kine_per_sessie.waarde
             }
         ]
     },
@@ -120,8 +165,8 @@ export const ZK_SCENARIOS = [
             {
                 type: "consult",
                 role: "Huisarts (Diagnose)",
-                brss: 30.00,
-                cost: 30.00,
+                brss: ZK_CONFIG.consult_huisarts.waarde,
+                cost: ZK_CONFIG.consult_huisarts.waarde,
                 ald: true // Start ALD aanvraag
             },
             {
@@ -135,7 +180,7 @@ export const ZK_SCENARIOS = [
             {
                 type: "consult",
                 role: "Oncoloog",
-                brss: 60.00,
+                brss: ZK_CONFIG.specialist_apc.waarde,
                 cost: 100.00, // Vaak hoog supplement
                 ald: true,
                 lex: ["Dépassements"]
@@ -152,7 +197,8 @@ export const ZK_SCENARIOS = [
                 type: "SSR",
                 name: "Verblijf Revalidatiekliniek",
                 days: 30,
-                forfait_jour: 20.00, // Dit blijft vaak voor eigen rekening!
+                forfait_jour: ZK_CONFIG.forfait_journalier.ziekenhuis, // Dit blijft vaak voor eigen rekening!
+                notes: [FORFAIT_NOTE],
                 lex: ["SSR", "Forfait Journalier"]
             }
         ]

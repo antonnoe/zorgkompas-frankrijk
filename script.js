@@ -2,8 +2,8 @@
    ZORGKOMPAS CONTROLLER - FINAL V4 (Met Café Claude integratie)
    ============================================================ */
 
-import { ZK_SCENARIOS } from "./scenarios.js";
-import { zkRunScenario } from "./scenarioEngine.js";
+import { ZK_SCENARIOS, ZK_FORFAIT_UITLEG } from "./scenarios.js";
+import { zkRunScenario, voorbehoudHtml, peilRegelHtml, peilVoetHtml, PEIL_LABEL_AAN } from "./scenarioEngine.js";
 
 // ------------------------------------------------------------
 // 1. LEXICON DATABASE
@@ -16,7 +16,7 @@ const LEXICON_DB = {
     "ALD": "Affection Longue Durée: Chronische ziekte. 100% vergoeding van de basis.",
     "Franchise": "Eigen risico per handeling (bijv. €2). Wordt nooit vergoed.",
     "Vignette": "Kleurcode op medicijnen die vergoeding bepaalt (65%, 30%, 15%).",
-    "Forfait Journalier": "Verplichte dagbijdrage bij opname (€20/dag).",
+    "Forfait Journalier": ZK_FORFAIT_UITLEG,
     "Parcours de soins": "Zorgtraject. Altijd eerst naar huisarts voor verwijzing.",
     "Dépassements": "Ereloonsupplementen bovenop het basistarief.",
     "Auxiliaire médical": "Paramedici zoals fysiotherapeuten.",
@@ -111,6 +111,9 @@ function initApp() {
     });
 
     attachListeners();
+
+    const voet = document.getElementById("peilVoet");
+    if (voet) { voet.innerHTML = peilVoetHtml(); voet.hidden = !PEIL_LABEL_AAN; }
 }
 
 function attachListeners() {
@@ -160,7 +163,7 @@ function renderOutput(result) {
     let html = `
         <div class="zk-intro-card">
             <div style="background:#f3f4f6; padding:10px 15px; border-radius:6px; font-size:13px; color:#333; margin-bottom:15px; border-left:4px solid #999;">
-                <strong style="display:block; margin-bottom:4px; color:#000;">Nauwkeurigheid kostenraming 2024-2025:</strong>
+                <strong style="display:block; margin-bottom:4px; color:#000;">Nauwkeurigheid kostenraming:</strong>
                 ${s.accuracy_text}
             </div>
 
@@ -214,6 +217,9 @@ function renderOutput(result) {
             </div>
         </div>`;
     });
+
+    // Voorbehoud, direct daaronder de Peil-stempel
+    html += voorbehoudHtml() + peilRegelHtml();
 
     container.innerHTML = html;
 }

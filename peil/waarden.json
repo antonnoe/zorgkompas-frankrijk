@@ -1,0 +1,71 @@
+{
+  "stand": "2026-10-20",
+  "toelichting": "Kopie van de waarden uit Peil, het parameterregister van Communities Abroad. Wordt bijgewerkt door de Peil-agent; tests/peil.test.mjs vergelijkt ZK_CONFIG in scenarios.js hiermee.",
+  "parameters": [
+    {
+      "id": "p.fr.secu.brss_consult_medecin_traitant",
+      "naam": "Base de remboursement consult huisarts",
+      "waarde": 30,
+      "waarde_weergave": "30,00 euro (consultation G, secteur 1, Métropole); vergoed 70 procent = 21 euro, na participation forfaitaire 19 euro",
+      "bron_url": "https://www.ameli.fr/medecin/exercice-liberal/facturation-remuneration/consultations-actes/tarifs/tarifs-conventionnels-medecins-generalistes-specialistes",
+      "verificatiedatum": "2026-10-19"
+    },
+    {
+      "id": "p.fr.secu.brss_kine_per_sessie",
+      "naam": "Voorbeeldtarief kinesitherapie per séance (rééducation na verstuiking)",
+      "waarde": 16.58,
+      "waarde_weergave": "16,58 euro per séance (voorbeeld rééducation na een verstuiking, AMK 7,5 x 2,21); vergoed 60 procent = 9,95 euro",
+      "bron_url": "https://www.ameli.fr/assure/remboursements/rembourse/tableau-recapitulatif-taux-remboursement",
+      "verificatiedatum": "2026-10-19"
+    },
+    {
+      "id": "p.fr.secu.brss_specialist_apc",
+      "naam": "Base de remboursement specialist, APC",
+      "waarde": 60,
+      "waarde_weergave": "60,00 euro (APC, avis ponctuel de consultant, Métropole, hors gériatre, psychiatre, neurologue); psychiatre of neurologue 67,50 euro",
+      "bron_url": "https://www.ameli.fr/medecin/exercice-liberal/facturation-remuneration/consultations-actes/tarifs/tarifs-conventionnels-medecins-generalistes-specialistes",
+      "verificatiedatum": "2026-10-19"
+    },
+    {
+      "id": "p.fr.secu.forfait_journalier",
+      "naam": "Forfait journalier hospitalier",
+      "waarde": {
+        "ziekenhuis": 23,
+        "psychiatrie": 17
+      },
+      "waarde_weergave": "23 euro per dag in ziekenhuis of kliniek, 17 euro per dag in een psychiatrische afdeling",
+      "bron_url": "https://www.ameli.fr/assure/remboursements/reste-charge/forfait-hospitalier",
+      "verificatiedatum": "2026-10-19"
+    },
+    {
+      "id": "p.fr.secu.vergoeding_kine_en_medicatie",
+      "naam": "Vergoeding kinesitherapie en medicatie",
+      "waarde": {
+        "kine": 0.6,
+        "medicatie_smr_majeur_important": 0.65,
+        "medicatie_smr_modere": 0.3,
+        "medicatie_smr_faible": 0.15,
+        "medicatie_irremplacable": 1
+      },
+      "waarde_weergave": "kiné 60 procent; medicijnen 65 procent (SMR majeur of important), 30 procent (modéré), 15 procent (faible), 100 procent (onvervangbaar en duur)",
+      "bron_url": "https://www.ameli.fr/assure/remboursements/rembourse/tableau-recapitulatif-taux-remboursement",
+      "verificatiedatum": "2026-10-19"
+    },
+    {
+      "id": "p.fr.secu.vergoeding_zonder_medecin_traitant",
+      "naam": "Vergoeding buiten het parcours de soins",
+      "waarde": 0.3,
+      "waarde_weergave": "30 procent van het tarief conventionnel buiten het parcours de soins (ticket modérateur 70 procent)",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1069",
+      "verificatiedatum": "2026-10-19"
+    },
+    {
+      "id": "p.fr.secu.vergoedingspercentage_standaard",
+      "naam": "Standaard vergoedingspercentage Sécurité sociale",
+      "waarde": 0.7,
+      "waarde_weergave": "70 procent van het tarief conventionnel voor artsenconsulten in het parcours de soins",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
+      "verificatiedatum": "2026-10-19"
+    }
+  ]
+}

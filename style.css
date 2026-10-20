@@ -175,3 +175,36 @@ body {
 /* FOOTER */
 #zk-footer { text-align: center; font-size: 12px; color: #999; padding: 40px 0; }
 .icon-img { width: 20px; height: 20px; vertical-align: middle; }
+
+/* PEIL-LABEL: voorbehoud, stempel en voettekstalinea. Alleen zichtbaar als PEIL_LABEL_AAN in scenarioEngine.js true is. */
+.voorbehoud { margin: 14px 0 0; padding: 14px 16px; background: #fff6e0; border: 1px solid #e9c46a; border-left: 5px solid #b7791f; border-radius: 8px; font-size: 16px; line-height: 1.55; color: #2a2117; }
+.voorbehoud strong { color: #1a140f; }
+.peil-stempel:focus-visible, .peil-alinea a:focus-visible { outline: 2px solid #800000; outline-offset: 3px; border-radius: 4px; }
+.peil-stempel-rij { display: flex; justify-content: flex-end; margin-top: 12px; }
+.peil-stempel { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 4px 12px 4px 4px; border: 1px solid #eadede; border-radius: 999px; background: #fff; color: #800000; text-decoration: none; transition: border-color .15s, background .15s; }
+.peil-stempel svg { flex: none; width: 36px; height: 36px; display: block; opacity: .85; filter: drop-shadow(0 1px 0 rgba(255,255,255,.9)) drop-shadow(0 -1px 0 rgba(128,0,0,.12)); }
+.peil-stempel__tk { display: flex; flex-direction: column; line-height: 1.25; }
+.peil-stempel__t1 { font-size: 13px; font-weight: 700; color: #7a1f1f; }
+.peil-stempel__t2 { font-size: 12px; color: #6a5d58; }
+.peil-stempel:hover { border-color: #cfa9a9; background: #fcf7f7; }
+.peil-pijl { display: inline-block; margin-left: .25em; font-size: 12px; line-height: 1; color: inherit; transition: transform .15s; }
+@media (prefers-reduced-motion: no-preference) { .peil-stempel:hover .peil-pijl { transform: translate(2px, -2px); } }
+.peil-stempel:hover .peil-stempel__t1 { text-decoration: underline; text-underline-offset: 2px; }
+.peil-merk { flex: none; display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: #800000; color: #fff; font: 700 12px/18px system-ui, sans-serif; text-align: center; text-decoration: none; }
+.peil-alinea { position: relative; margin: 14px auto 0; padding: 0 20px 0 46px; max-width: 72ch; font-size: 13px; line-height: 1.6em; color: #666; text-align: left; }
+.peil-alinea[hidden] { display: none; }
+.peil-alinea .peil-merk { position: absolute; left: 20px; top: 3px; }
+.peil-alinea strong { color: var(--text); }
+.peil-alinea a { display: inline-block; padding: 12px 0; color: #800000; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Smal scherm: geen horizontale scroll, tikdoelen van minstens 44 px */
+@media (max-width: 600px) {
+    #zk-dashboard { padding: 14px; gap: 12px; }
+    .zk-dash-block { min-width: 0; width: 100%; }
+    .zk-dash-block select, #zk-scenario-select { min-height: 44px; box-sizing: border-box; }
+    .zk-opt-row { flex-wrap: wrap; gap: 4px 12px; }
+    .zk-opt-row label { min-height: 44px; display: flex; align-items: center; }
+    #zk-total { margin-left: 0; width: 100%; box-sizing: border-box; }
+    .zk-step-header { min-height: 44px; }
+    .zk-row { gap: 10px; }
+}

@@ -1,8 +1,8 @@
 /* ============================================================
-   ZORGKOMPAS ENGINE (2025 LOGIC)
+   ZORGKOMPAS ENGINE
    ============================================================ */
 
-import { ZK_SCENARIOS } from "./scenarios.js";
+import { ZK_SCENARIOS, ZK_CONFIG } from "./scenarios.js";
 
 export function zkGetScenario(id) {
     return ZK_SCENARIOS.find(s => s.id === id);
@@ -77,7 +77,7 @@ function calculateStep(step, state) {
     }
 
     // 2. AMELI (SÉCU)
-    let ameliRate = 0.70; // Standaard 70%
+    let ameliRate = ZK_CONFIG.vergoeding.standaard; // Standaard 70%
 
     // ALD Check (State of Stap)
     const isAld = state.ald || step.ald;
@@ -86,27 +86,27 @@ function calculateStep(step, state) {
         ameliRate = 1.0;
         if (!notes.includes("ALD 100%")) notes.push("ALD 100% Dekking");
     } else {
-        if (step.type === "kine") ameliRate = 0.60;
-        if (step.type === "medicatie") ameliRate = 0.65; 
-        if (step.type === "operation" && brss > 120) ameliRate = 1.0;
+        if (step.type === "kine") ameliRate = ZK_CONFIG.vergoeding.kine;
+        if (step.type === "medicatie") ameliRate = ZK_CONFIG.vergoeding.medicatie;
+        if (step.type === "operation" && brss > ZK_CONFIG.operatie_volledig_boven) ameliRate = 1.0;
     }
 
     // Strafkorting (Geen traitant)
     if (!state.traitant && !isAld && step.role !== 'Huisarts' && step.type === 'consult') {
-        ameliRate = 0.30;
+        ameliRate = ZK_CONFIG.vergoeding.buiten_parcours;
         notes.push("Strafkorting (buiten parcours)");
     }
 
     let ameliPay = brss * ameliRate;
 
-    // 3. FRANCHISES 2025
+    // 3. FRANCHISES
     let franchise = 0;
     // Consult: verhoogd naar €2
-    if (step.type === "consult" || step.type === "diagnostiek") franchise = 2.00;
+    if (step.type === "consult" || step.type === "diagnostiek") franchise = ZK_CONFIG.franchise.consult;
     // Medicatie: verhoogd naar €1 per doosje
-    if (step.type === "medicatie") franchise = (step.items || []).length * 1.00;
+    if (step.type === "medicatie") franchise = (step.items || []).length * ZK_CONFIG.franchise.medicatie_per_doosje;
     // Kine: €2 per sessie (limiet per jaar bestaat, maar hier per geval)
-    if (step.type === "kine") franchise = step.sessions * 2.00;
+    if (step.type === "kine") franchise = step.sessions * ZK_CONFIG.franchise.kine_per_sessie;
     
     if (step.type === "SSR") ameliPay = 0; // Forfait journalier niet door Ameli
 
@@ -149,3 +149,48 @@ function calculateStep(step, state) {
 
 function round(n) { return Math.round(n * 100) / 100; }
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+/* ============================================================
+   PEIL-LABEL: stand, stempel, markdownregel en voettekstalinea
+   ============================================================ */
+
+// Peil: het parameterregister van Communities Abroad (privé). De waarden staan als kopie in peil/waarden.json; tests/peil.test.mjs bewaakt dat ZK_CONFIG daarmee overeenkomt.
+// Bij elke controle alleen PEIL_STAND aanpassen (en peil/waarden.json).
+export const PEIL_STAND = "2026-10-20";
+// Schakelaar voor het Peil-label (stempel, markdown-regel en voettekstalinea). Zolang false toont de tool niets over Peil.
+export const PEIL_LABEL_AAN = true;
+export const PEIL_UITLEG_URL = "https://infofrankrijk.com/ons-manifest-hoe-wij-werken/";
+const MAANDEN_NL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
+const MAANDEN_KORT = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+
+function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+export function peilStandNl() {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(PEIL_STAND);
+    return m ? `${parseInt(m[3], 10)} ${MAANDEN_NL[parseInt(m[2], 10) - 1]} ${m[1]}` : PEIL_STAND;
+}
+export function peilStandKort() {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(PEIL_STAND);
+    return m ? `${parseInt(m[3], 10)} ${MAANDEN_KORT[parseInt(m[2], 10) - 1]} ${m[1]}` : PEIL_STAND;
+}
+export const PEIL_MERK = `<span class="peil-merk" aria-hidden="true">&#10003;</span>`;
+// Voorbehoud (disclaimer) direct onder de uitkomst; de stempel komt daarna.
+export const VOORBEHOUD_TEKST = "dit is een educatieve tool. Bedragen zijn indicatief en kunnen afwijken van uw persoonlijke situatie.";
+export function voorbehoudHtml() {
+    return `<p class="voorbehoud"><strong>Let op:</strong> ${VOORBEHOUD_TEKST}</p>`;
+}
+// Compacte stempelknop: merkteken met dubbele ring en vinkje, twee korte regels, het geheel is één link naar het manifest.
+export function peilRegelHtml() {
+    if (!PEIL_LABEL_AAN) return "";
+    const aria = `Bedragen gecontroleerd tegen Peil, stand ${peilStandNl()}, lees hoe wij werken`;
+    return `<div class="peil-stempel-rij"><a class="peil-stempel" href="${PEIL_UITLEG_URL}" target="_blank" rel="noopener" aria-label="${escapeHtml(aria)}"><svg viewBox="0 0 40 40" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18.5" fill="#fff" stroke="#800000" stroke-width="1.6"/><circle cx="20" cy="20" r="14.5" fill="none" stroke="#800000" stroke-width="1"/><path d="M13.5 20.5 L18 25 L26.5 15.5" fill="none" stroke="#800000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="peil-stempel__tk" aria-hidden="true"><span class="peil-stempel__t1">Gecontroleerd tegen Peil</span><span class="peil-stempel__t2">stand ${escapeHtml(peilStandKort())}<span class="peil-pijl" aria-hidden="true">&#8599;</span></span></span></a></div>`;
+}
+export function peilRegelMd() {
+    if (!PEIL_LABEL_AAN) return "";
+    return `[Bedragen gecontroleerd tegen Peil, stand ${peilStandNl()}](${PEIL_UITLEG_URL})`;
+}
+export function peilVoetHtml() {
+    if (!PEIL_LABEL_AAN) return "";
+    return `${PEIL_MERK}<strong>Over de bedragen in deze tool.</strong> Alle bedragen, tarieven en grenzen komen uit Peil, het register waarin wij deze gegevens bijhouden. Elk bedrag is gecontroleerd bij de officiële bron, de laatste controle was op ${escapeHtml(peilStandNl())}. <a href="${PEIL_UITLEG_URL}" target="_blank" rel="noopener">Lees in ons manifest hoe wij werken</a>`;
+}
