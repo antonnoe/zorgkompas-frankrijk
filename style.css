@@ -217,3 +217,4 @@ body {
 .zk-uitleg p { margin: 0 0 8px; line-height: 1.45; }
 .zk-uitleg a { color: var(--brand); }
 @media (max-width: 600px) { .zk-hint, .zk-uitleg { max-width: none; } .zk-tooltip-wrapper.zk-tip-wide:hover::after { width: 240px; left: 0; transform: none; } }
+@media (max-width: 600px) { #zk-dashboard { position: static; } }
