@@ -10,6 +10,7 @@ const scriptCode = lees("script.js");
 const css = lees("style.css");
 const WAARDEN = JSON.parse(lees("peil/waarden.json"));
 const UITLEG_URL = "https://infofrankrijk.com/ons-manifest-hoe-wij-werken/";
+const KAART_URL = "https://communitiesabroad.com/manifest/tool/zorgkompas-frankrijk";
 const Z = laad();
 const C = Z.ZK_CONFIG;
 
@@ -57,8 +58,8 @@ if (!C.vergoeding.bron || !C.vergoeding.datum) fout("ZK_CONFIG.vergoeding mist b
   if (Z.PEIL_UITLEG_URL !== UITLEG_URL) fout(`PEIL_UITLEG_URL is ${Z.PEIL_UITLEG_URL}, verwacht ${UITLEG_URL}.`);
   if (Z.peilRegelMd() !== `[Bedragen gecontroleerd tegen Peil, stand ${nl}](${UITLEG_URL})`) fout("Markdownregel klopt niet.");
   const h = Z.peilRegelHtml();
-  if (!h.includes(`href="${UITLEG_URL}"`) || !h.includes('target="_blank"') || !h.includes('rel="noopener"')) fout("Stempel linkt niet naar het manifest met target _blank en rel noopener.");
-  if (!h.includes(`aria-label="Bedragen gecontroleerd tegen Peil, stand ${nl}, lees hoe wij werken"`)) fout("Stempel mist de aria-label met volledige datum.");
+  if (!h.includes(`href="${KAART_URL}"`) || !h.includes('target="_blank"') || !h.includes('rel="noopener"')) fout("Stempel linkt niet naar de toolkaart met target _blank en rel noopener.");
+  if (!h.includes(`aria-label="Bedragen gecontroleerd tegen Peil, stand ${nl}, bekijk wat er gecontroleerd is"`)) fout("Stempel mist de aria-label met volledige datum.");
   if (!h.includes("Gecontroleerd tegen Peil</span>") || !h.includes(`stand ${kort}<span class="peil-pijl" aria-hidden="true">&#8599;</span></span>`)) fout("Stempel mist de twee korte regels of het pijltje.");
   if ((h.match(/<a /g) || []).length !== 1 || !h.includes("<svg") || !h.includes("#800000")) fout("Stempel moet één link met inline svg in #800000 zijn.");
   const v = Z.peilVoetHtml();
