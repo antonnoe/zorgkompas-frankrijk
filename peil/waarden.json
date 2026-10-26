@@ -1,7 +1,18 @@
 {
-  "stand": "2026-10-20",
+  "stand": "2026-10-26",
   "toelichting": "Kopie van de waarden uit Peil, het parameterregister van Communities Abroad. Wordt bijgewerkt door de Peil-agent; tests/peil.test.mjs vergelijkt ZK_CONFIG in scenarios.js hiermee.",
   "parameters": [
+    {
+      "id": "p.fr.mutuelle.plafond_niet_optam",
+      "naam": "Maximale vergoeding dépassement arts zonder OPTAM (contrat responsable)",
+      "waarde": {
+        "max_depassement_fractie_br": 1,
+        "korting_ten_opzichte_van_optam_fractie_br": 0.2
+      },
+      "waarde_weergave": "dépassement van een arts zonder OPTAM ten hoogste 100 procent van de BR en ten hoogste de OPTAM-vergoeding min 20 procent van de BR",
+      "bron_url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000052861614",
+      "verificatiedatum": "2026-10-26"
+    },
     {
       "id": "p.fr.secu.brss_consult_medecin_traitant",
       "naam": "Base de remboursement consult huisarts",
@@ -27,6 +38,17 @@
       "verificatiedatum": "2026-10-19"
     },
     {
+      "id": "p.fr.secu.forfait_actes_lourds",
+      "naam": "Forfait voor zware handelingen (vanaf 120 euro)",
+      "waarde": {
+        "bedrag": 32,
+        "drempel_tarief": 120
+      },
+      "waarde_weergave": "32 euro per handeling met een tarief vanaf 120 euro (in plaats van het ticket modérateur), sinds 1 april 2026; daarvoor 24 euro",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
+      "verificatiedatum": "2026-10-20"
+    },
+    {
       "id": "p.fr.secu.forfait_journalier",
       "naam": "Forfait journalier hospitalier",
       "waarde": {
@@ -36,6 +58,42 @@
       "waarde_weergave": "23 euro per dag in ziekenhuis of kliniek, 17 euro per dag in een psychiatrische afdeling",
       "bron_url": "https://www.ameli.fr/assure/remboursements/reste-charge/forfait-hospitalier",
       "verificatiedatum": "2026-10-19"
+    },
+    {
+      "id": "p.fr.secu.franchise_medicale",
+      "naam": "Franchise médicale (medicijnen en paramedische handelingen)",
+      "waarde": {
+        "per_doos_medicijn": 1,
+        "per_paramedische_handeling": 1,
+        "dagplafond_paramedisch": 4,
+        "jaarplafond": 70
+      },
+      "waarde_weergave": "1 euro per doosje medicijnen en per paramedische handeling (max 4 euro per dag); jaarplafond 70 euro per persoon (was 50 euro tot 30 september 2026)",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
+      "verificatiedatum": "2026-10-20"
+    },
+    {
+      "id": "p.fr.secu.franchise_transport",
+      "naam": "Franchise medisch transport",
+      "waarde": {
+        "per_transport": 4,
+        "dagplafond": 8
+      },
+      "waarde_weergave": "4 euro per sanitair vervoer, maximaal 8 euro per dag; valt onder het jaarplafond van 70 euro",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F2951",
+      "verificatiedatum": "2026-10-20"
+    },
+    {
+      "id": "p.fr.secu.participation_forfaitaire",
+      "naam": "Participation forfaitaire per consult",
+      "waarde": {
+        "per_handeling": 2,
+        "dagplafond_zelfde_zorgverlener": 8,
+        "jaarplafond": 70
+      },
+      "waarde_weergave": "2 euro per consult, handeling, röntgen of labonderzoek; maximaal 8 euro per dag bij dezelfde zorgverlener; jaarplafond 70 euro (35 keer), was 50 euro tot 30 september 2026",
+      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
+      "verificatiedatum": "2026-10-20"
     },
     {
       "id": "p.fr.secu.vergoeding_kine_en_medicatie",
@@ -66,53 +124,6 @@
       "waarde_weergave": "70 procent van het tarief conventionnel voor artsenconsulten in het parcours de soins",
       "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
       "verificatiedatum": "2026-10-19"
-    },
-    {
-      "id": "p.fr.secu.franchise_medicale",
-      "naam": "Franchise médicale (medicijnen en paramedische handelingen)",
-      "waarde": {
-        "per_doos_medicijn": 1,
-        "per_paramedische_handeling": 1,
-        "dagplafond_paramedisch": 4,
-        "jaarplafond": 70
-      },
-      "waarde_weergave": "1 euro per doosje medicijnen en per paramedische handeling (max 4 euro per dag); jaarplafond 70 euro per persoon (was 50 euro tot 30 september 2026)",
-      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
-      "verificatiedatum": "2026-10-20"
-    },
-    {
-      "id": "p.fr.secu.participation_forfaitaire",
-      "naam": "Participation forfaitaire per consult",
-      "waarde": {
-        "per_handeling": 2,
-        "dagplafond_zelfde_zorgverlener": 8,
-        "jaarplafond": 70
-      },
-      "waarde_weergave": "2 euro per consult, handeling, röntgen of labonderzoek; maximaal 8 euro per dag bij dezelfde zorgverlener; jaarplafond 70 euro (35 keer), was 50 euro tot 30 september 2026",
-      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
-      "verificatiedatum": "2026-10-20"
-    },
-    {
-      "id": "p.fr.secu.franchise_transport",
-      "naam": "Franchise medisch transport",
-      "waarde": {
-        "per_transport": 4,
-        "dagplafond": 8
-      },
-      "waarde_weergave": "4 euro per sanitair vervoer, maximaal 8 euro per dag; valt onder het jaarplafond van 70 euro",
-      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F2951",
-      "verificatiedatum": "2026-10-20"
-    },
-    {
-      "id": "p.fr.secu.forfait_actes_lourds",
-      "naam": "Forfait voor zware handelingen (vanaf 120 euro)",
-      "waarde": {
-        "bedrag": 32,
-        "drempel_tarief": 120
-      },
-      "waarde_weergave": "32 euro per handeling met een tarief vanaf 120 euro (in plaats van het ticket modérateur), sinds 1 april 2026; daarvoor 24 euro",
-      "bron_url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F165",
-      "verificatiedatum": "2026-10-20"
     }
   ]
 }

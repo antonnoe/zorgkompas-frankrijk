@@ -20,6 +20,7 @@ const fout = (m) => fouten.push(m);
 
 // Koppeling Peil-id naar de waarde in ZK_CONFIG. "app" is de waarde in de tool, "peil" het veld "waarde" uit het register.
 const KOPPELING = {
+  "p.fr.mutuelle.plafond_niet_optam": { constante: "ZK_CONFIG.mutuelle.niet_optam_min en .niet_optam_max_depassement", vergelijk: (w) => [["korting ten opzichte van OPTAM (fractie BR)", C.mutuelle.niet_optam_min, w && w.korting_ten_opzichte_van_optam_fractie_br], ["maximum dépassement (fractie BR)", C.mutuelle.niet_optam_max_depassement, w && w.max_depassement_fractie_br]] },
   "p.fr.secu.brss_consult_medecin_traitant": { constante: "ZK_CONFIG.consult_huisarts", vergelijk: (w) => [["tarief consult huisarts", C.consult_huisarts.waarde, w], ["scenario griep gebruikt dit tarief", C.consult_huisarts.waarde, Z.zkGetScenario("griep").steps[0].brss]] },
   "p.fr.secu.brss_kine_per_sessie": { constante: "ZK_CONFIG.kine_per_sessie", vergelijk: (w) => [["tarief kine per sessie", C.kine_per_sessie.waarde, w], ["scenario rugklachten gebruikt dit tarief", C.kine_per_sessie.waarde, Z.zkGetScenario("fysio_rug").steps[2].brss], ["scenario hernia gebruikt dit tarief", C.kine_per_sessie.waarde, Z.zkGetScenario("hernia").steps[3].brss]] },
   "p.fr.secu.brss_specialist_apc": { constante: "ZK_CONFIG.specialist_apc", vergelijk: (w) => [["tarief specialist APC", C.specialist_apc.waarde, w], ["scenario hernia gebruikt dit tarief", C.specialist_apc.waarde, Z.zkGetScenario("hernia").steps[0].brss]] },

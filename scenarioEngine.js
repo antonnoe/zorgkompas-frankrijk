@@ -231,7 +231,7 @@ function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
 // Peil: het parameterregister van Communities Abroad (privé). De waarden staan als kopie in peil/waarden.json; tests/peil.test.mjs bewaakt dat ZK_CONFIG daarmee overeenkomt.
 // Bij elke controle alleen PEIL_STAND aanpassen (en peil/waarden.json).
-export const PEIL_STAND = "2026-10-20";
+export const PEIL_STAND = "2026-10-26";
 // Schakelaar voor het Peil-label (stempel, markdown-regel en voettekstalinea). Zolang false toont de tool niets over Peil.
 export const PEIL_LABEL_AAN = true;
 export const PEIL_UITLEG_URL = "https://infofrankrijk.com/ons-manifest-hoe-wij-werken/";
