@@ -18,3 +18,5 @@ jobs:
         run: node tests/zorgkompas.test.mjs
       - name: Bedragen tegen Peil
         run: node tests/peil.test.mjs
+      - name: Herstelde rekenfouten
+        run: node tests/herstel.test.mjs

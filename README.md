@@ -20,6 +20,7 @@ Geen installatie en geen netwerk nodig (Node 22):
 
     node tests/zorgkompas.test.mjs   # rekenvoorbeelden
     node tests/peil.test.mjs         # ZK_CONFIG tegen peil/waarden.json, stempel en teksten
+    node tests/herstel.test.mjs      # herstelde rekenfouten (keuring 26-10-2026)
 
 De tests laden `scenarios.js` en `scenarioEngine.js` met `node:vm`. Ze draaien ook bij elke push en wekelijks via `.github/workflows/peil-controle.yml`.
 

@@ -28,8 +28,12 @@ export function zkRunScenario(scenarioId, state) {
     // Dezelfde situatie zonder mutuelle (alleen Sécu), voor de vergelijking bij de uitkomst
     const zonder = run({ ...state, mutuelle: 0 });
 
+    // ALD geldt alleen voor zorg binnen het protocole de soins: staat het vinkje aan en heeft geen enkele stap met de aandoening te maken, dan zegt de uitkomst dat
+    const aldZonderEffect = !!state.ald && !scenario.steps.some(st => st.ald || st.aldMogelijk);
+
     return {
         scenario,
+        aldZonderEffect,
         steps: met.steps,
         totals: {
             user: round(met.user),
@@ -103,40 +107,62 @@ function calculateStep(step, state) {
     const honoraria = cost - liggeld;
 
     // 2. AMELI (SÉCU), bruto vergoeding vóór participation en franchises
-    let ameliRate = ZK_CONFIG.vergoeding.standaard; // Standaard 70%
-    const isAld = state.ald || step.ald;
-    const acteLourd = !isAld && (step.type === "operation" || step.type === "diagnostiek") && brss >= AL.drempel;
+    const V = ZK_CONFIG.vergoeding;
+    const isOpname = step.type === "operation";
+    let ameliRate = V.standaard; // Standaard 70%
+    // ALD (100 procent) geldt alleen voor zorg binnen het protocole de soins (art. L160-14 3° en L324-1 CSS):
+    // stappen die bij de aandoening horen (step.ald, of step.aldMogelijk met het vinkje aan). Andere zorg volgt de gewone regels.
+    const isAld = step.ald === true || (!!state.ald && step.aldMogelijk === true);
+    // Beeldvorming vanaf de drempel: geen eigen bijdrage, geen forfait (art. R160-16 II 1°). Pathologie en laboratorium: geen forfait, gewone eigen bijdrage (IV).
+    const beeldvormingVrij = !isAld && step.type === "diagnostiek" && step.soort === "beeldvorming" && brss >= AL.drempel;
+    const forfaitSoort = step.type === "diagnostiek" && step.soort !== "beeldvorming" && step.soort !== "pathologie";
+    const acteLourd = !isAld && (isOpname || forfaitSoort) && brss >= AL.drempel;
     let buitenParcours = false;
 
     if (isAld) {
         ameliRate = 1.0;
         if (!notes.includes("ALD 100%")) notes.push("ALD 100% Dekking");
     } else {
-        if (step.type === "kine") ameliRate = ZK_CONFIG.vergoeding.kine;
-        if (step.type === "medicatie") ameliRate = ZK_CONFIG.vergoeding.medicatie;
-        if (acteLourd) ameliRate = 1.0;
+        if (step.type === "kine") ameliRate = V.kine;
+        if (step.type === "medicatie") ameliRate = V.medicatie;
+        if (isOpname) ameliRate = V.opname; // honoraria en verblijf tijdens een opname (art. R160-5 1° en 2°)
+        if (acteLourd || beeldvormingVrij) ameliRate = 1.0;
     }
 
     // Korting zonder aangemelde médecin traitant: geldt voor elk artsenconsult, ook bij een huisarts die niet uw médecin traitant is.
+    // Alleen zorg binnen het ALD-protocol is vrijgesteld (art. R160-6 tweede alinea, D162-1-6 3° CSS).
     // Uitzonderingen (onder de 16 jaar, spoed, buiten de eigen woonplaats) worden niet doorgerekend.
     if (!state.traitant && !isAld && step.type === 'consult') {
-        ameliRate = ZK_CONFIG.vergoeding.buiten_parcours;
+        ameliRate = V.buiten_parcours;
         buitenParcours = true;
         notes.push("Strafkorting (buiten parcours)");
     }
 
     let ameliBruto = brss * ameliRate;
     if (acteLourd) {
-        // Bij handelingen vanaf de drempel komt een forfait in plaats van het ticket modérateur
-        ameliBruto = Math.max(0, ameliBruto - AL.bedrag);
-        notes.push(`Forfait ${AL.bedrag} euro bij zware handelingen (in plaats van ticket modérateur)`);
+        // Bij handelingen vanaf de drempel komt een forfait in plaats van het ticket modérateur;
+        // de eigen bijdrage is het laagste van de gewone eigen bijdrage en het forfait (art. R160-16 I: "plafonnée")
+        const gewoon = brss * (1 - (isOpname ? V.opname : V.standaard));
+        const eigen = Math.min(AL.bedrag, gewoon);
+        ameliBruto = brss - eigen;
+        if (eigen < AL.bedrag) notes.push(`Eigen bijdrage ${EURO(eigen)}: de gewone eigen bijdrage is lager dan het forfait van ${AL.bedrag} euro`);
+        else notes.push(`Forfait ${AL.bedrag} euro bij zware handelingen (in plaats van ticket modérateur)`);
+    }
+    if (beeldvormingVrij) notes.push("Zware beeldvorming: geen eigen bijdrage, alleen de participation forfaitaire (art. R160-16 II 1° CSS)");
+    if (isOpname && !acteLourd && !isAld) {
+        // Opname zonder forfait: de eigen bijdrage en de dagbijdrage tellen niet op, u betaalt het hoogste van de twee (art. L174-4 CSS)
+        const eigenBijdrage = brss * (1 - ameliRate);
+        const verrekend = Math.min(eigenBijdrage, liggeld);
+        ameliBruto += verrekend;
+        notes.push(`Opname onder ${AL.drempel} euro: ${Math.round(V.opname * 100)} procent vergoed, de eigen bijdrage valt weg tegen de dagbijdrage (art. L174-4 CSS)`);
     }
 
     // 3. PARTICIPATION FORFAITAIRE EN FRANCHISES (blijven altijd voor eigen rekening, ook met mutuelle)
     let franchise = 0;
     if (step.type === "consult" || step.type === "diagnostiek") franchise = F.participation_forfaitaire;
-    if (step.type === "medicatie") franchise = (step.items || []).length * F.franchise_geneesmiddel_per_verpakking;
-    if (step.type === "kine") franchise = step.sessions * F.franchise_paramedisch_per_handeling;
+    // De franchise is per verpakking of handeling nooit hoger dan de vergoeding daarvan (art. D160-9 laatste alinea)
+    if (step.type === "medicatie") franchise = (step.items || []).reduce((som, i) => som + Math.min(F.franchise_geneesmiddel_per_verpakking, i.brss * ameliRate), 0);
+    if (step.type === "kine") franchise = step.sessions * Math.min(F.franchise_paramedisch_per_handeling, step.brss * ameliRate);
 
     let ameliPay = ameliBruto;
     if (step.type === "SSR") { ameliPay = 0; ameliBruto = 0; } // Forfait journalier niet door Ameli
@@ -155,11 +181,9 @@ function calculateStep(step, state) {
         } else if (buitenParcours) {
             // Alleen het gewone ticket modérateur, nooit de majoration
             honorariaDekking = Math.min(rest, brss * (1 - ZK_CONFIG.vergoeding.standaard));
-        } else if (step.type === "kine" || step.type === "medicatie") {
-            // Alleen het ticket modérateur (tot 100 procent BR), niet het gekozen niveau
+        } else if (step.type === "kine" || step.type === "medicatie" || step.type === "treatment") {
+            // Alleen het ticket modérateur (tot 100 procent BR), niet het gekozen niveau; een contrat responsable vergoedt het altijd (art. R871-2 1° CSS)
             honorariaDekking = Math.min(rest, brss - ameliBruto);
-        } else if (step.type === "treatment") {
-            honorariaDekking = 0;
         } else {
             // Artsenhonoraria: tot N x BR in totaal (Sécu inbegrepen), nooit meer dan de werkelijke kosten
             const niveau = nonOptam && depassement ? zkNonOptamNiveau(N) : N;
@@ -167,13 +191,17 @@ function calculateStep(step, state) {
             if (nonOptam && depassement) notes.push("Arts niet OPTAM: dépassement minder vergoed");
         }
 
-        // Het forfait voor zware handelingen mag de mutuelle vergoeden, afhankelijk van het contract (aangenomen)
+        // Het forfait voor zware handelingen is deel van de participation die een contrat responsable verplicht vergoedt (art. R871-2 1° CSS)
         // (het forfait zit al in "rest", want ameliBruto is verlaagd met het forfait)
         // Forfait journalier: elke contrat responsable dekt het volledig, zonder tijdslimiet
         mutuellePay = honorariaDekking + liggeld;
         if (liggeld > 0) notes.push("Liggeld volledig gedekt door een contrat responsable");
-        if (acteLourd) notes.push(`Of de mutuelle het forfait van ${AL.bedrag} euro vergoedt, hangt van uw contract af (hier aangenomen: ja)`);
-        if (buitenParcours) notes.push("Mutuelle vergoedt de korting buiten het parcours niet");
+        if (acteLourd) notes.push(`Een contrat responsable moet het forfait van ${AL.bedrag} euro vergoeden (art. R871-2 1° CSS)`);
+        if (buitenParcours) {
+            notes.push("Mutuelle vergoedt de korting buiten het parcours niet");
+            // Aanname van de tool, geen wettelijke regel: de wet (art. R871-1) sluit alleen de toeslag en het dépassement autorisé uit
+            if (depassement) notes.push("Aanname van deze tool: buiten het parcours rekent de tool geen vergoeding van het dépassement (honorarium boven het tarief) door de mutuelle; een contract kan dat wel vergoeden");
+        }
     }
     mutuellePay = Math.max(0, mutuellePay);
     // Nooit meer dan wat na Sécu overblijft, en de franchise blijft voor de gebruiker
@@ -193,6 +221,7 @@ function calculateStep(step, state) {
     };
 }
 
+function EURO(n) { return String(Math.round(n * 100) / 100).replace(".", ",") + " euro"; }
 function round(n) { return Math.round(n * 100) / 100; }
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 

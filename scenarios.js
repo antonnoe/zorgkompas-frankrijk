@@ -24,6 +24,9 @@ export const ZK_CONFIG = {
         kine:            0.60,  // p.fr.secu.vergoeding_kine_en_medicatie
         medicatie:       0.65,  // p.fr.secu.vergoeding_kine_en_medicatie (SMR majeur of important)
         buiten_parcours: 0.30,  // p.fr.secu.vergoeding_zonder_medecin_traitant
+        // Honoraria en verblijf tijdens een opname: eigen bijdrage 15 tot 25 procent (art. R160-5 1° en 2° CSS), dus 75 tot 85 procent vergoed.
+        // Het exacte UNCAM-percentage staat nog niet in Peil (p.fr.secu.vergoeding_opname is te_verifieren); 0,80 is een aanname die binnen de bandbreedte blijft.
+        opname:          0.80,
         bron: "service-public.fr F165 en F1069, ameli.fr tableau récapitulatif des taux de remboursement",
         datum: "2026-10-19"
     },
@@ -124,6 +127,7 @@ export const ZK_SCENARIOS = [
             {
                 type: "diagnostiek",
                 name: "Röntgenfoto wervelkolom",
+                soort: "beeldvorming",
                 brss: 45.00,
                 cost_public: 45.00,
                 cost_private: { base: 45.00, supplement: 25.00 },
@@ -158,6 +162,7 @@ export const ZK_SCENARIOS = [
             {
                 type: "diagnostiek",
                 name: "MRI Scan",
+                soort: "beeldvorming",
                 brss: 69.00,
                 cost_public: 69.00,
                 cost_private: { base: 69.00, supplement: 40.00 },

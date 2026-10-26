@@ -13,7 +13,7 @@ const LEXICON_DB = {
     "Secteur 1": "Arts houdt zich strikt aan de overheidstarieven. Geen supplementen.",
     "Secteur 2": "Arts mag zelf tarieven bepalen. U betaalt het supplement zelf.",
     "OPTAM": "Arts met gematigde tarieven. Betere vergoeding dan 'puur' Secteur 2.",
-    "ALD": "Affection Longue Durée: Chronische ziekte. 100% vergoeding van de basis.",
+    "ALD": "Affection Longue Durée: Chronische ziekte. 100% vergoeding van de basis, alleen voor zorg die bij de aandoening hoort (het protocole de soins).",
     "Franchise": "Eigen risico per handeling (bijv. €2). Wordt nooit vergoed.",
     "Vignette": "Kleurcode op medicijnen die vergoeding bepaalt (65%, 30%, 15%).",
     "Forfait Journalier": ZK_FORFAIT_UITLEG,
@@ -172,6 +172,7 @@ function renderOutput(result) {
 
             <h3>${s.label}</h3>
             <p>${s.description}</p>
+            ${result.aldZonderEffect ? `<p class="zk-subtext">U heeft ALD aangevinkt, maar in dit scenario hoort geen zorg bij een ALD-aandoening. Voor deze zorg gelden de gewone regels.</p>` : ""}
             
             <div style="display:flex; justify-content:space-between; color:var(--brand); font-weight:bold; font-size:18px; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
                 <span>Uw geschatte bijdrage, met uw mutuelle:</span>
